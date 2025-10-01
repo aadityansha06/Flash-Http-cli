@@ -90,6 +90,31 @@ gcc -o flash main.c -lcurl
 ./flash
 ```
 
+### Termux installation 
+```bash
+# Install dependencies
+pkg update && pkg upgrade
+pkg install clang curl
+
+# Clone the repository
+git clone https://github.com/aadityansha06/Flash-Http-cli.git
+cd Flash-Http-cli
+
+# Compile
+clang Flash-cli.c -o Flash -lcurl
+
+# Run
+./Flash
+
+
+Note: You may see warnings about getchar() return values or empty-body while loops during compilation.
+These warnings are safe to ignore — the program will still run fine.
+
+```
+
+
+
+
 ## 🔧 Usage
 
 ### GET Requests
