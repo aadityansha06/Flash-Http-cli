@@ -83,11 +83,11 @@ sudo port install curl
 git clone https://github.com/aadityansha06/Flash-Http-cli.git
 cd Flash-Http-cli
 
-# Compile
-gcc -o flash main.c -lcurl
+# build
+make
 
 # Run
-./flash
+./bin/flash
 ```
 
 ### Termux installation 
