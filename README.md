@@ -35,7 +35,7 @@ Download the latest release for Linux:
 
 ```bash
 # Download the latest release
-wget https://github.com/aadityansha06/Flash-Http-cli/releases/download/1.0/flash-linux-x64
+wget https://github.com/aadityansha06/Flash-Http-cli/releases/download/1.0.1/flash-linux-x64
 
 # Make it executable
 chmod +x flash-linux-x64
@@ -229,7 +229,6 @@ Contributions are welcome! Here's how you can help:
 4. 🚀 Push to the branch (`git push origin feature/amazing-feature`)
 5. 🎯 Open a Pull Request
 
-
 # Contributors
 
 Thank you to everyone who has contributed to Flash HTTP CLI! 🙏
@@ -242,6 +241,8 @@ Thank you to everyone who has contributed to Flash HTTP CLI! 🙏
 
 ---
 
+
+ 
 Want to contribute? Check out my new issues or Just raise a PR 😊!
 
 
