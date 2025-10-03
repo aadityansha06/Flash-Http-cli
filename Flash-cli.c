@@ -301,8 +301,8 @@ static void ContentApplication()
 
   printf(GRV_GRAY "\n  Rules:\n");
   printf("  • Key-value pairs separated by " GRV_YELLOW "'=' "
-         "eg. cat=dog\n");
-  printf("  • Use Proper Formatting\n" RESET);
+         "\neg.\nid=1\n name=jhon\n status=active\n"RESET);
+  printf(GRV_RED"• Use Proper Formatting\n" RESET);
 
   char *postdata;
 
