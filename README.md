@@ -205,17 +205,7 @@ Ensure your JSON is properly formatted:
 }
 ```
 
-## 🤝 Contributing
 
-Contributions are welcome! Here's how you can help:
-
-1. 🍴 Fork the repository
-2. 🌿 Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. 💾 Commit your changes (`git commit -m 'Add amazing feature'`)
-4. 🚀 Push to the branch (`git push origin feature/amazing-feature`)
-5. 🎯 Open a Pull Request
-
-### Development Setup
 
 ```bash
 git clone https://github.com/aadityansha06/Flash-Http-cli.git
@@ -243,6 +233,38 @@ gcc -g -o flash-dev main.c -lcurl
 - [ ] Configuration file support
 - [ ] Windows binary releases
 - [ ] Response syntax highlighting
+
+
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how you can help:
+
+1. 🍴 Fork the repository
+2. 🌿 Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. 💾 Commit your changes (`git commit -m 'Add amazing feature'`)
+4. 🚀 Push to the branch (`git push origin feature/amazing-feature`)
+5. 🎯 Open a Pull Request
+
+### Development Setup
+
+
+
+
+# Contributors
+
+Thank you to everyone who has contributed to Flash HTTP CLI! 🙏
+
+## Core Team
+- [@aadityansha06](https://github.com/aadityansha06) - Creator & Maintainer
+
+## Contributors
+- [@sakshamg567](https://github.com/sakshamg567) - Improved form-data input handling (#2)
+
+---
+
+Want to contribute? Check out the issue or just raise a PR 😊
+
 
 ## 📄 License
 
