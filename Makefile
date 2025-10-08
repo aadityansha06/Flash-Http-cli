@@ -1,7 +1,7 @@
 # needs to be updated for every release
 VERSION_MAJOR = 1
 VERSION_MINOR = 0
-VERSION_PATCH = 3
+VERSION_PATCH = 2
 
 
 CC = gcc

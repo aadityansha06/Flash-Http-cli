@@ -1,3 +1,26 @@
+
+
+
+/// After any modfication made please change the version.h file 
+
+/*
+version number is divided into 3 parts, minor, major and patch
+if a fix is small that it doesnt break anything, like formatting, then we update patch number
+like 1.0.1 -> 1.0.2
+1.0.0 - 
+1 - major
+2-minor 
+3-patch bugs etc
+
+
+
+*/
+
+
+
+
+
+
 #include <curl/curl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -125,54 +148,63 @@ int download_file(const char *url, const char *outfile)
 // Fetch latest tag from GitHub
 int get_latest_tag(char *tag, size_t maxlen)
 {
-  CURL *curl;
-  CURLcode res;
-  struct storage chunk;
-  chunk.memory = malloc(1);
-  chunk.size = 0;
+   CURL *curl;
+    CURLcode res;
+    struct storage chunk;
+    chunk.memory = malloc(1);
+    chunk.size = 0;
 
-  curl = curl_easy_init();
-  if (!curl)
-    return 1;
+    curl = curl_easy_init();
+    if (!curl)
+        return 1;
 
-  char url[256];
-  snprintf(url, sizeof(url), "https://api.github.com/repos/%s/releases/latest", REPO);
+    char url[256];
+    snprintf(url, sizeof(url), "https://api.github.com/repos/%s/releases/latest", REPO);
 
-  curl_easy_setopt(curl, CURLOPT_URL, url);
-  curl_easy_setopt(curl, CURLOPT_USERAGENT, "flash-cli-updater"); // GitHub API requires UA
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callBack);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "flash-cli-updater");
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callBack);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
-  res = curl_easy_perform(curl);
-  curl_easy_cleanup(curl);
+    res = curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
 
-  if (res != CURLE_OK)
-  {
+    if (res != CURLE_OK)
+    {
+        free(chunk.memory);
+        return 1;
+    }
+
+    // --- Extract "tag_name" ---
+    char *p = strstr(chunk.memory, "\"tag_name\":\"");
+    if (!p) { free(chunk.memory); return 1; }
+    p += strlen("\"tag_name\":\"");
+    char *q = strchr(p, '"');
+    if (!q) { free(chunk.memory); return 1; }
+    size_t len = q - p;
+    if (len >= maxlen) len = maxlen - 1;
+    strncpy(tag, p, len);
+    tag[len] = 0;
+
+    // --- Extract and show "name" (release title) ---
+    char release_name[256] = "N/A";
+    char *n = strstr(chunk.memory, "\"name\":\"");
+    if (n) {
+        n += strlen("\"name\":\"");
+        char *m = strchr(n, '"');
+        if (m) {
+            size_t name_len = m - n;
+            if (name_len >= sizeof(release_name)) name_len = sizeof(release_name) - 1;
+            strncpy(release_name, n, name_len);
+            release_name[name_len] = 0;
+        }
+    }
+
+    printf("Latest version: %s\n", tag);
+    printf("Release name: %s\n", release_name);
+
     free(chunk.memory);
-    return 1;
-  }
-
-  char *p = strstr(chunk.memory, "\"tag_name\":\"");
-  if (!p)
-  {
-    free(chunk.memory);
-    return 1;
-  }
-  p += strlen("\"tag_name\":\"");
-  char *q = strchr(p, '"');
-  if (!q)
-  {
-    free(chunk.memory);
-    return 1;
-  }
-  size_t len = q - p;
-  if (len >= maxlen)
-    len = maxlen - 1;
-  strncpy(tag, p, len);
-  tag[len] = 0;
-
-  free(chunk.memory);
-  return 0;
+    return 0;
 }
 
 void self_update(const char *download_url)
@@ -300,12 +332,40 @@ int main()
 
   curl_global_init(CURL_GLOBAL_DEFAULT); // moved earlier
 
-  if (getenv("FLASH_SKIP_UPDATE") == NULL)
+
+// How auto update working 
+
+
+// making a call to https://api.github.com/repos/aadityansha06/Flash-Http-cli/releases/latest
+/*
+getting a json response about latest verison 
+ex -
+,
+  "tag_name": "1.0.2",
+  "target_commitish": "main",
+  "name": "Enhanced JSON input with multi-line support and improved UI alignment",
+      "url": "https://api.github.com/repos/aadityansha06/Flash-Http-cli/releases/assets/3590",
+     
+
+}
+
+Then praising the tag name and comparing it with the verison.h verison if it's npt same then echoing it's an new update 
+
+
+
+
+*/
+
+
+
+  if (getenv("FLASH_SKIP_UPDATE") == NULL) 
   { // skip if just updated
     char latest[64];
     const char *base_version = RELEASE_VERSION;
 
-    printf("Current version (compiled): %s\n", RELEASE_VERSION);
+   // printf("Current version (compiled): %s\n", RELEASE_VERSION);
+     printf("New version available!\n");
+    printf("Installed version record : %s\n", installed);
 
     if (get_latest_tag(latest, sizeof(latest)) != 0)
     {
@@ -313,12 +373,12 @@ int main()
     }
     else
     {
-      printf("Latest version: %s\n", latest);
-      if (strcmp(latest, base_version) != 0)
+     
+      if (strcmp(latest, installed) != 0)
       {
         // only prompt if remote differs from installed record
-        printf("New version available!\n");
-        printf("Do you want to update (y/n): ");
+      
+        printf("\nDo you want to update (y/n): ");
         char ans = 'n';
         if (scanf(" %c", &ans) != 1)
           ans = 'n';
