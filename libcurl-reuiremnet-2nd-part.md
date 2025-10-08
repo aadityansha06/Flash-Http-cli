@@ -1,5 +1,7 @@
 *****CURLOPT_POSTFIELDS - data to POST to server ****
 
+https://httpbin.org/post //
+
 `````
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_POSTFIELDS, char postdata);
 
