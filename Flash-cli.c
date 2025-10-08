@@ -2,37 +2,236 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include "ui/colors.h"
+#include <sys/stat.h>
 
-#define RESET "\033[0m"
-#define BOLD "\033[1m"
-#define DIM "\033[2m"
+#include "version.h"
 
-// Gruvbox colors
-#define GB_BG "\033[48;2;40;40;40m"        // Dark background
-#define GB_FG "\033[38;2;235;219;178m"     // Light foreground
-#define GB_RED "\033[38;2;251;73;52m"      // Bright red
-#define GB_GREEN "\033[38;2;184;187;38m"   // Bright green
-#define GB_YELLOW "\033[38;2;250;189;47m"  // Bright yellow
-#define GB_BLUE "\033[38;2;131;165;152m"   // Bright blue
-#define GB_PURPLE "\033[38;2;211;134;155m" // Bright purple
-#define GB_AQUA "\033[38;2;142;192;124m"   // Bright aqua
-#define GB_ORANGE "\033[38;2;254;128;25m"  // Bright orange
-#define GB_GRAY "\033[38;2;168;153;132m"   // Gray
+#define REPO "aadityansha06/Flash-Http-cli"
+#define LINUX_BIN_NAME "flash-linux-x64"
+#define BAK "flash.bak"
+#define TMP "flash.tmp"
+#define INSTALLED_VERSION_FILE ".flash_version"
 
-#define GRV_BG "\033[48;2;40;40;40m"        // Dark background
-#define GRV_FG "\033[38;2;235;219;178m"     // Light foreground
-#define GRV_RED "\033[38;2;251;73;52m"      // Bright red
-#define GRV_GREEN "\033[38;2;184;187;38m"   // Bright green
-#define GRV_YELLOW "\033[38;2;250;189;47m"  // Bright yellow
-#define GRV_BLUE "\033[38;2;131;165;152m"   // Bright blue
-#define GRV_PURPLE "\033[38;2;211;134;155m" // Bright purple
-#define GRV_AQUA "\033[38;2;142;192;124m"   // Bright aqua
-#define GRV_ORANGE "\033[38;2;254;128;25m"  // Bright orange
-#define GRV_GRAY "\033[38;2;168;153;132m"
-// Background variants
-#define GB_BG_RED "\033[48;2;251;73;52m"
-#define GB_BG_GREEN "\033[48;2;184;187;38m"
-#define GB_BG_BLUE "\033[48;2;131;165;152m"
+static void ContentApplication(); ///  content-type  application/x-www-form-urlencoded  data
+static void ContentJson();        // sending content type json
+
+static void postmethod();
+static size_t callBack(char *chunk, size_t size, size_t num_element, void *storage_data); // data is the  storage where recived chunk after processing get stored
+
+static int download_file(const char *url, const char *outfile);
+static int get_latest_tag(char *tag, size_t maxlen);
+static void self_update(const char *download_url);
+typedef struct storage
+{
+
+  char *memory; // it hold the adrrwss of the memoruy where data is sotred
+  size_t size;
+} storage;
+
+static void save_installed_version(const char *ver)
+{
+  FILE *f = fopen(INSTALLED_VERSION_FILE, "w");
+  if (!f)
+    return;
+  fputs(ver, f);
+  fclose(f);
+}
+static int load_installed_version(char *buf, size_t sz)
+{
+  FILE *f = fopen(INSTALLED_VERSION_FILE, "r");
+  if (!f)
+    return 0;
+  size_t n = fread(buf, 1, sz - 1, f);
+  fclose(f);
+  if (n == 0)
+    return 0;
+  buf[n] = 0;
+  // strip trailing newline
+  char *nl = strchr(buf, '\n');
+  if (nl)
+    *nl = 0;
+  return 1;
+}
+
+int num = 1;
+static size_t callBack(char *chunk, size_t size, size_t num_element, void *storage_data)
+{
+  size_t total_chunk_size = size * num_element;
+
+  // since the actuall memeory is of type storgae we'll cast void to storage type
+  storage *data = (storage *)storage_data;
+  //  printf("%d chunk(%zu byte  size) : \n \n %.*s",num, total_chunk_size ,(int )total_chunk_size,chunk);
+  //  fflush(stdout);
+  // i++;
+
+  /*
+
+  %zu → print an unsigned size_t (total_chunk_size, the chunk length in bytes).
+
+  %.*s → this is the tricky one: !!! no space btw . and *
+
+  %s normally prints a string until it finds a null terminator (\0).
+
+  %.*s means: print exactly N characters from the string, even if there's no \0.
+
+  The * is replaced by the integer you pass in the argument list.
+
+  So %.*s takes two arguments:
+
+  the maximum number of characters to print (here (int)total_chunk_size)
+
+  the pointer to the data (here chunk)
+
+  */
+
+  // since we have total chunk size we can increase the size of storage using realloc
+  char *ptr = realloc(data->memory, data->size + total_chunk_size + 1); // eariler size of memeory + recived chunk size + 1 (for null)
+
+  if (ptr == NULL)
+  {
+    printf(" \t Unbale to realloc the size");
+    return 0;
+  }
+
+  data->memory = ptr; // Why? , now it'll hold the address of memory whose size is
+  /// eariler size of memeory + recived chunk size + 1
+
+  memcpy(&(data->memory[data->size]), chunk, total_chunk_size); // if the data size is 0 , then from meemroy[0] the chunk will be added to meemory
+  // and subsequently it will be upadted based on current chunk recived with   mem->size +=totla_chunk_size;
+
+  data->size += total_chunk_size;
+
+  data->memory[data->size] = 0; // null at the end of each chunk recive to avoid garage value
+
+  return total_chunk_size; // returning this would help libcurl to comapre that the chunk size it sent was exactuly the same we recived
+}
+
+int download_file(const char *url, const char *outfile)
+{
+  CURL *curl;
+  FILE *fp;
+  CURLcode res;
+
+  fp = fopen(outfile, "wb");
+  if (!fp)
+  {
+    perror("fopen");
+    return 1;
+  }
+
+  curl = curl_easy_init();
+  if (curl)
+  {
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "curl/8.0");
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+
+    res = curl_easy_perform(curl);
+
+    if (res != CURLE_OK)
+    {
+      fprintf(stderr, "curl_easy_perform() failed: %s\n",
+              curl_easy_strerror(res));
+    }
+
+    curl_easy_cleanup(curl);
+    fclose(fp);
+    return (res == CURLE_OK) ? 0 : 1;
+  }
+
+  fclose(fp);
+  fprintf(stderr, "curl init failed\n");
+  return 1;
+}
+
+// Fetch latest tag from GitHub
+int get_latest_tag(char *tag, size_t maxlen)
+{
+  CURL *curl;
+  CURLcode res;
+  struct storage chunk;
+  chunk.memory = malloc(1);
+  chunk.size = 0;
+
+  curl = curl_easy_init();
+  if (!curl)
+    return 1;
+
+  char url[256];
+  snprintf(url, sizeof(url), "https://api.github.com/repos/%s/releases/latest", REPO);
+
+  curl_easy_setopt(curl, CURLOPT_URL, url);
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, "flash-cli-updater"); // GitHub API requires UA
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callBack);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+
+  res = curl_easy_perform(curl);
+  curl_easy_cleanup(curl);
+
+  if (res != CURLE_OK)
+  {
+    free(chunk.memory);
+    return 1;
+  }
+
+  char *p = strstr(chunk.memory, "\"tag_name\":\"");
+  if (!p)
+  {
+    free(chunk.memory);
+    return 1;
+  }
+  p += strlen("\"tag_name\":\"");
+  char *q = strchr(p, '"');
+  if (!q)
+  {
+    free(chunk.memory);
+    return 1;
+  }
+  size_t len = q - p;
+  if (len >= maxlen)
+    len = maxlen - 1;
+  strncpy(tag, p, len);
+  tag[len] = 0;
+
+  free(chunk.memory);
+  return 0;
+}
+
+int is_newer(const char *latest)
+{
+  return strcmp(latest, RELEASE_VERSION) != 0;
+}
+
+void self_update(const char *download_url)
+{
+  printf("Downloading new version...\n");
+  if (download_file(download_url, TMP) != 0)
+  {
+    printf("Download failed");
+    return;
+  }
+
+  printf("Starting Updater...\n");
+  pid_t pid = fork();
+  if (pid == 0)
+  {
+    sleep(1);
+    rename("./flash", BAK);
+    rename(TMP, "./flash");
+    chmod("./flash", 0755);
+    execl("./flash", "./flash", NULL);
+    exit(0);
+  }
+  else
+  {
+    exit(0);
+  }
+}
+
 // Beautiful Flash header
 void printFlashHeader()
 {
@@ -54,19 +253,6 @@ void printSeparator()
 {
   printf(GRV_GRAY "  ═════════════════════════════════════════════════════\n" RESET);
 }
-
-static void ContentApplication(); ///  content-type  application/x-www-form-urlencoded  data
-static void ContentJson();        // sending content type json
-
-static void postmethod();
-static size_t callBack(char* chunk, size_t size, size_t num_element, void* storage_data); // data is the  storage where recived chunk after processing get stored
-
-typedef struct storage
-{
-
-  char* memory; // it hold the adrrwss of the memoruy where data is sotred
-  size_t size;
-} storage;
 
 int display()
 {
@@ -93,12 +279,12 @@ int display()
 
 void geturl()
 {
-  storage* data = malloc(sizeof(storage)); // where all chunk will be stored
+  storage *data = malloc(sizeof(storage)); // where all chunk will be stored
 
   data->memory = malloc(1); // so the memroy by defult have 1 byte of storege
   data->size = 0;
 
-  CURL* handel = curl_easy_init(); // to send or recive all the request handel would be used\
+  CURL *handel = curl_easy_init(); // to send or recive all the request handel would be used\
 
   if (handel == NULL)
   {
@@ -119,7 +305,7 @@ void geturl()
 
   curl_easy_setopt(handel, CURLOPT_WRITEFUNCTION, callBack); // function to handel the chuck data recived
 
-  curl_easy_setopt(handel, CURLOPT_WRITEDATA, (void*)data); // since writedata by defult proivde response in file type so we do type conversion in void type
+  curl_easy_setopt(handel, CURLOPT_WRITEDATA, (void *)data); // since writedata by defult proivde response in file type so we do type conversion in void type
   // void type conversion whill free us to convert the datinto any other type as per need
 
   CURLcode result = curl_easy_perform(handel); // it will perform the task of sending request
@@ -142,11 +328,87 @@ void geturl()
 
 int main()
 {
-  curl_global_init(CURL_GLOBAL_DEFAULT);
+
+  curl_global_init(CURL_GLOBAL_DEFAULT); // moved earlier
+
+  if (getenv("FLASH_SKIP_UPDATE") == NULL)
+  { // skip if just updated
+    char latest[64];
+    char installed[64];
+    const char *base_version = RELEASE_VERSION;
+    if (!load_installed_version(installed, sizeof installed))
+    {
+      strncpy(installed, RELEASE_VERSION, sizeof(installed) - 1);
+      installed[sizeof(installed) - 1] = 0;
+    }
+
+    printf("Current version (compiled): %s\n", RELEASE_VERSION);
+    printf("Installed version record : %s\n", installed);
+
+    if (get_latest_tag(latest, sizeof(latest)) != 0)
+    {
+      printf("Failed to fetch latest version.\n");
+    }
+    else
+    {
+      printf("Latest version: %s\n", latest);
+      if (strcmp(latest, installed) != 0)
+      {
+        // only prompt if remote differs from installed record
+        printf("New version available!\n");
+        printf("Do you want to update (y/n): ");
+        char ans = 'n';
+        if (scanf(" %c", &ans) != 1)
+          ans = 'n';
+        int flush_ch;
+        while ((flush_ch = getchar()) != '\n' && flush_ch != EOF)
+        {
+        }
+        if (ans == 'y' || ans == 'Y')
+        {
+          char download_url[256];
+          snprintf(download_url, sizeof(download_url),
+                   "https://github.com/%s/releases/download/%s/%s",
+                   REPO, latest, LINUX_BIN_NAME);
+          printf("Downloading new version (%s)...\n", latest);
+          if (download_file(download_url, TMP) == 0)
+          {
+            if (rename("./flash", BAK) != 0)
+              perror("backup failed");
+            if (rename(TMP, "./flash") != 0)
+            {
+              perror("replace failed");
+              rename(BAK, "./flash");
+            }
+            else
+            {
+              chmod("./flash", 0755);
+              save_installed_version(latest);
+              printf("Updated to %s. Restarting...\n", latest);
+              setenv("FLASH_SKIP_UPDATE", "1", 1); // guard to prevent loop
+              execl("./flash", "./flash", NULL);
+              perror("execl failed");
+            }
+          }
+          else
+          {
+            printf("Download failed.\n");
+          }
+        }
+      }
+      else
+      {
+        printf("Already up to date.\n");
+      }
+    }
+  }
+  else
+  {
+    printf("Skipping update check (FLASH_SKIP_UPDATE set).\n");
+  }
+
   int opt = -1;
   char ch;
-label:
-  //  system("clear");
 
   do
   {
@@ -181,58 +443,6 @@ label:
   curl_global_cleanup();
 
   return 0;
-}
-int num = 1;
-static size_t callBack(char* chunk, size_t size, size_t num_element, void* storage_data)
-{
-  size_t total_chunk_size = size * num_element;
-
-  // since the actuall memeory is of type storgae we'll cast void to storage type
-  storage* data = (storage*)storage_data;
-  //  printf("%d chunk(%zu byte  size) : \n \n %.*s",num, total_chunk_size ,(int )total_chunk_size,chunk);
-  //  fflush(stdout);
-  // i++;
-
-  /*
-
-  %zu → print an unsigned size_t (total_chunk_size, the chunk length in bytes).
-
-  %.*s → this is the tricky one: !!! no space btw . and *
-
-  %s normally prints a string until it finds a null terminator (\0).
-
-  %.*s means: print exactly N characters from the string, even if there's no \0.
-
-  The * is replaced by the integer you pass in the argument list.
-
-  So %.*s takes two arguments:
-
-  the maximum number of characters to print (here (int)total_chunk_size)
-
-  the pointer to the data (here chunk)
-
-  */
-
-  // since we have total chunk size we can increase the size of storage using realloc
-  char* ptr = realloc(data->memory, data->size + total_chunk_size + 1); // eariler size of memeory + recived chunk size + 1 (for null)
-
-  if (ptr == NULL)
-  {
-    printf(" \t Unbale to realloc the size");
-    return 0;
-  }
-
-  data->memory = ptr; // Why? , now it'll hold the address of memory whose size is
-  /// eariler size of memeory + recived chunk size + 1
-
-  memcpy(&(data->memory[data->size]), chunk, total_chunk_size); // if the data size is 0 , then from meemroy[0] the chunk will be added to meemory
-  // and subsequently it will be upadted based on current chunk recived with   mem->size +=totla_chunk_size;
-
-  data->size += total_chunk_size;
-
-  data->memory[data->size] = 0; // null at the end of each chunk recive to avoid garage value
-
-  return total_chunk_size; // returning this would help libcurl to comapre that the chunk size it sent was exactuly the same we recived
 }
 
 static void postmethod()
@@ -288,7 +498,7 @@ static void postmethod()
 
 static void ContentApplication()
 {
-  CURL* handle;
+  CURL *handle;
   handle = curl_easy_init();
 
   system("clear");
@@ -301,10 +511,10 @@ static void ContentApplication()
 
   printf(GRV_GRAY "\n  Rules:\n");
   printf("  • Key-value pairs separated by " GRV_YELLOW "'=' "
-    "\neg.\nid=1\n name=jhon\n status=active\n"RESET);
-  printf(GRV_RED"• Use Proper Formatting\n" RESET);
+         "\neg.\nid=1\n name=jhon\n status=active\n" RESET);
+  printf(GRV_RED "• Use Proper Formatting\n" RESET);
 
-  char* postdata;
+  char *postdata;
 
   printSeparator();
   int c;
@@ -353,7 +563,7 @@ static void ContentApplication()
       continue;
     }
 
-    char* sep = strchr(entry, '=');
+    char *sep = strchr(entry, '=');
     if (!sep)
     {
       printf(GRV_RED "\nUse Proper formatting (key=value)" RESET);
@@ -361,18 +571,18 @@ static void ContentApplication()
     }
 
     *sep = '\0';
-    char* key = entry;
-    char* value = sep + 1;
+    char *key = entry;
+    char *value = sep + 1;
 
     // Encode key and value separately
-    char* encoded_key = curl_easy_escape(handle, key, 0);
+    char *encoded_key = curl_easy_escape(handle, key, 0);
     if (!encoded_key)
     {
       fprintf(stderr, "Key encoding failed !!\n");
       break;
     }
 
-    char* encoded_value = curl_easy_escape(handle, value, 0);
+    char *encoded_value = curl_easy_escape(handle, value, 0);
     if (!encoded_value)
     {
       fprintf(stderr, "Value encoding failed !!\n");
@@ -386,7 +596,7 @@ static void ContentApplication()
     size_t new_size = current_len + encoded_pair_len + 2; // +1 for '&', +1 for '\0'
 
     // Reallocate memory
-    char* temp = realloc(postdata, new_size);
+    char *temp = realloc(postdata, new_size);
     if (!temp)
     {
       fprintf(stderr, "Memory allocation failed!\n");
@@ -449,10 +659,9 @@ static void ContentApplication()
   curl_easy_cleanup(handle);
 }
 
-
 static void ContentJson()
 {
-  CURL* handel = curl_easy_init();
+  CURL *handel = curl_easy_init();
   int c;
   while ((c = getchar()) != '\n' && c != EOF)
     ;
@@ -478,7 +687,7 @@ static void ContentJson()
   printSeparator();
 
   // Dynamic string for JSON data
-  char* jsondata = malloc(1);
+  char *jsondata = malloc(1);
   jsondata[0] = '\0';
   size_t total_size = 1;
 
@@ -488,11 +697,14 @@ static void ContentJson()
   int empty_line_count = 0;
   int line_count = 0;
 
-  while (fgets(line, sizeof(line), stdin) != NULL) {
+  while (fgets(line, sizeof(line), stdin) != NULL)
+  {
     // Check for empty line (just newline)
-    if (strcmp(line, "\n") == 0) {
+    if (strcmp(line, "\n") == 0)
+    {
       empty_line_count++;
-      if (empty_line_count >= 1 && line_count > 0) break;
+      if (empty_line_count >= 1 && line_count > 0)
+        break;
       continue;
     }
 
@@ -502,18 +714,21 @@ static void ContentJson()
     size_t line_len = strlen(line);
     size_t new_total_size = total_size + line_len;
 
-    char* temp = realloc(jsondata, new_total_size);
-    if (!temp) {
+    char *temp = realloc(jsondata, new_total_size);
+    if (!temp)
+    {
       fprintf(stderr, "Memory allocation failed!\n");
       free(jsondata);
       return;
     }
     jsondata = temp;
 
-    if (total_size == 1) { // First line
+    if (total_size == 1)
+    { // First line
       strcpy(jsondata, line);
     }
-    else {
+    else
+    {
       strcat(jsondata, line);
     }
 
@@ -521,7 +736,8 @@ static void ContentJson()
   }
 
   // Remove the trailing newline if exists
-  if (total_size > 1 && jsondata[total_size - 2] == '\n') {
+  if (total_size > 1 && jsondata[total_size - 2] == '\n')
+  {
     jsondata[total_size - 2] = '\0';
   }
 
@@ -532,7 +748,7 @@ static void ContentJson()
   printf(GRV_YELLOW "\n  🚀 Sending JSON request...\n" RESET);
   printf(GRV_GRAY "  JSON being sent:\n%s\n" RESET, jsondata);
 
-  struct curl_slist* list = NULL;
+  struct curl_slist *list = NULL;
   list = curl_slist_append(list, "Content-Type: application/json");
   list = curl_slist_append(list, "Accept: application/json");
 
@@ -542,10 +758,12 @@ static void ContentJson()
 
   CURLcode result = curl_easy_perform(handel);
 
-  if (result != CURLE_OK) {
+  if (result != CURLE_OK)
+  {
     fprintf(stderr, "\nError while sending data: %s", curl_easy_strerror(result));
   }
-  else {
+  else
+  {
     printf("\n Length of data sent: %zu bytes", strlen(jsondata));
     printf("\n ✅ Data sent successfully!");
     printf("\n\n Press any key to continue...");
