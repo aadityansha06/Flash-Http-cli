@@ -12,7 +12,6 @@
 #define LINUX_BIN_NAME "flash-linux-x64"
 #define BAK "flash.bak"
 #define TMP "flash.tmp"
-#define INSTALLED_VERSION_FILE ".flash_version"
 
 static void ContentApplication(); ///  content-type  application/x-www-form-urlencoded  data
 static void ContentJson();        // sending content type json
@@ -29,31 +28,6 @@ typedef struct storage
   char *memory; // it hold the adrrwss of the memoruy where data is sotred
   size_t size;
 } storage;
-
-static void save_installed_version(const char *ver)
-{
-  FILE *f = fopen(INSTALLED_VERSION_FILE, "w");
-  if (!f)
-    return;
-  fputs(ver, f);
-  fclose(f);
-}
-static int load_installed_version(char *buf, size_t sz)
-{
-  FILE *f = fopen(INSTALLED_VERSION_FILE, "r");
-  if (!f)
-    return 0;
-  size_t n = fread(buf, 1, sz - 1, f);
-  fclose(f);
-  if (n == 0)
-    return 0;
-  buf[n] = 0;
-  // strip trailing newline
-  char *nl = strchr(buf, '\n');
-  if (nl)
-    *nl = 0;
-  return 1;
-}
 
 int num = 1;
 static size_t callBack(char *chunk, size_t size, size_t num_element, void *storage_data)
@@ -201,11 +175,6 @@ int get_latest_tag(char *tag, size_t maxlen)
   return 0;
 }
 
-int is_newer(const char *latest)
-{
-  return strcmp(latest, RELEASE_VERSION) != 0;
-}
-
 void self_update(const char *download_url)
 {
   printf("Downloading new version...\n");
@@ -334,16 +303,9 @@ int main()
   if (getenv("FLASH_SKIP_UPDATE") == NULL)
   { // skip if just updated
     char latest[64];
-    char installed[64];
     const char *base_version = RELEASE_VERSION;
-    if (!load_installed_version(installed, sizeof installed))
-    {
-      strncpy(installed, RELEASE_VERSION, sizeof(installed) - 1);
-      installed[sizeof(installed) - 1] = 0;
-    }
 
     printf("Current version (compiled): %s\n", RELEASE_VERSION);
-    printf("Installed version record : %s\n", installed);
 
     if (get_latest_tag(latest, sizeof(latest)) != 0)
     {
@@ -352,7 +314,7 @@ int main()
     else
     {
       printf("Latest version: %s\n", latest);
-      if (strcmp(latest, installed) != 0)
+      if (strcmp(latest, base_version) != 0)
       {
         // only prompt if remote differs from installed record
         printf("New version available!\n");
@@ -383,7 +345,6 @@ int main()
             else
             {
               chmod("./flash", 0755);
-              save_installed_version(latest);
               printf("Updated to %s. Restarting...\n", latest);
               setenv("FLASH_SKIP_UPDATE", "1", 1); // guard to prevent loop
               execl("./flash", "./flash", NULL);
