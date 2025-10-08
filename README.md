@@ -238,7 +238,7 @@ Thanks to everyone who has contributed to Flash HTTP CLI! 🙏
 
 ## Contributors
 
-- [@dexter-xD](https://github.com/dexter-xD) - Enhanced JSON input with multi-line support and improved UI alignment (#2)
+- [@dexter-xD](https://github.com/dexter-xD) - Enhanced JSON input with multi-line support and improved UI alignment (#6)
 
 - [@sakshamg567](https://github.com/sakshamg567) - Improved form-data input handling (#2)
 
