@@ -39,7 +39,7 @@ void printFlashHeader()
   printf(GB_ORANGE BOLD);
   printf("╔══════════════════════════════════════════════════════════════════════╗\n");
   printf("║  " GB_BG_BLUE GB_FG "                              FLASH                               " RESET GB_ORANGE BOLD "  ║\n");
-  printf("║  " GB_AQUA "HTTP Client for Terminal " GB_GRAY "• " GB_GREEN "Fast " GB_GRAY "• " GB_YELLOW "Simple " GB_GRAY "• " GB_PURPLE "Powerful" GB_ORANGE "     ║\n");
+  printf("║  " GB_AQUA "HTTP Client for Terminal " GB_GRAY "• " GB_GREEN "Fast " GB_GRAY "• " GB_YELLOW "Simple " GB_GRAY "• " GB_PURPLE "Powerful" GB_ORANGE "                 ║\n");
   printf("╚══════════════════════════════════════════════════════════════════════╝\n");
   printf(RESET "\n");
 }
@@ -59,12 +59,12 @@ static void ContentApplication(); ///  content-type  application/x-www-form-urle
 static void ContentJson();        // sending content type json
 
 static void postmethod();
-static size_t callBack(char *chunk, size_t size, size_t num_element, void *storage_data); // data is the  storage where recived chunk after processing get stored
+static size_t callBack(char* chunk, size_t size, size_t num_element, void* storage_data); // data is the  storage where recived chunk after processing get stored
 
 typedef struct storage
 {
 
-  char *memory; // it hold the adrrwss of the memoruy where data is sotred
+  char* memory; // it hold the adrrwss of the memoruy where data is sotred
   size_t size;
 } storage;
 
@@ -78,9 +78,9 @@ int display()
   // Menu options with beautiful formatting
   printf(GB_FG "┌─────────────────────────────────────────────────────────────────────┐\n");
   printf("│                                                                     │\n");
-  printf("│  " GB_GREEN "⚡ " GB_YELLOW "1" GB_FG ". " GB_AQUA "GET Request   " GB_GRAY "│ " GB_FG "Retrieve data from endpoint            " GB_GRAY "│\n");
-  printf("│  " GB_ORANGE "📡 " GB_YELLOW "2" GB_FG ". " GB_PURPLE "POST Request  " GB_GRAY "│ " GB_FG "Send data to server                   " GB_GRAY "│\n");
-  printf("│  " GB_RED "🚪 " GB_YELLOW "0" GB_FG ". " GB_RED "Exit          " GB_GRAY "│ " GB_FG "Close Flash CLI                       " GB_GRAY "│\n");
+  printf("│  " GB_GREEN "⚡ " GB_YELLOW "1" GB_FG ". " GB_AQUA "GET Request   " GB_GRAY "│ " GB_FG "Retrieve data from endpoint            " GB_GRAY "      │\n");
+  printf("│  " GB_ORANGE "📡 " GB_YELLOW "2" GB_FG ". " GB_PURPLE "POST Request  " GB_GRAY "│ " GB_FG "Send data to server                   " GB_GRAY "       │\n");
+  printf("│  " GB_RED "🚪 " GB_YELLOW "0" GB_FG ". " GB_RED "Exit          " GB_GRAY "│ " GB_FG "Close Flash CLI                       " GB_GRAY "       │\n");
   printf("│                                                                     │\n");
   printf("└─────────────────────────────────────────────────────────────────────┘\n" RESET);
 
@@ -93,12 +93,12 @@ int display()
 
 void geturl()
 {
-  storage *data = malloc(sizeof(storage)); // where all chunk will be stored
+  storage* data = malloc(sizeof(storage)); // where all chunk will be stored
 
   data->memory = malloc(1); // so the memroy by defult have 1 byte of storege
   data->size = 0;
 
-  CURL *handel = curl_easy_init(); // to send or recive all the request handel would be used\
+  CURL* handel = curl_easy_init(); // to send or recive all the request handel would be used\
 
   if (handel == NULL)
   {
@@ -119,7 +119,7 @@ void geturl()
 
   curl_easy_setopt(handel, CURLOPT_WRITEFUNCTION, callBack); // function to handel the chuck data recived
 
-  curl_easy_setopt(handel, CURLOPT_WRITEDATA, (void *)data); // since writedata by defult proivde response in file type so we do type conversion in void type
+  curl_easy_setopt(handel, CURLOPT_WRITEDATA, (void*)data); // since writedata by defult proivde response in file type so we do type conversion in void type
   // void type conversion whill free us to convert the datinto any other type as per need
 
   CURLcode result = curl_easy_perform(handel); // it will perform the task of sending request
@@ -183,12 +183,12 @@ label:
   return 0;
 }
 int num = 1;
-static size_t callBack(char *chunk, size_t size, size_t num_element, void *storage_data)
+static size_t callBack(char* chunk, size_t size, size_t num_element, void* storage_data)
 {
   size_t total_chunk_size = size * num_element;
 
   // since the actuall memeory is of type storgae we'll cast void to storage type
-  storage *data = (storage *)storage_data;
+  storage* data = (storage*)storage_data;
   //  printf("%d chunk(%zu byte  size) : \n \n %.*s",num, total_chunk_size ,(int )total_chunk_size,chunk);
   //  fflush(stdout);
   // i++;
@@ -214,7 +214,7 @@ static size_t callBack(char *chunk, size_t size, size_t num_element, void *stora
   */
 
   // since we have total chunk size we can increase the size of storage using realloc
-  char *ptr = realloc(data->memory, data->size + total_chunk_size + 1); // eariler size of memeory + recived chunk size + 1 (for null)
+  char* ptr = realloc(data->memory, data->size + total_chunk_size + 1); // eariler size of memeory + recived chunk size + 1 (for null)
 
   if (ptr == NULL)
   {
@@ -246,15 +246,15 @@ static void postmethod()
     system("clear");
 
     printf(GRV_PURPLE "  ┌─────────────────────────────────────────────────────┐\n");
-    printf("  │" GRV_FG "                  " BOLD "POST METHOD" RESET GRV_FG "                   " GRV_PURPLE "│\n");
+    printf("  │" GRV_FG "                  " BOLD "POST METHOD" RESET GRV_FG "                   " GRV_PURPLE "     │\n");
     printf("  ├─────────────────────────────────────────────────────┤\n");
     printf("  │                                                     │\n");
-    printf("  │  " GRV_YELLOW "📋 " GRV_BLUE "1." GRV_FG " Form Data    " GRV_GRAY "- application/x-www-form     " GRV_PURPLE "│\n");
-    printf("  │                    " GRV_GRAY "  urlencoded                  " GRV_PURPLE "│\n");
+    printf("  │  " GRV_YELLOW "📋 " GRV_BLUE "1." GRV_FG " Form Data    " GRV_GRAY "- application/x-www-form     " GRV_PURPLE "   │\n");
+    printf("  │                    " GRV_GRAY "  urlencoded                  " GRV_PURPLE "   │\n");
     printf("  │                                                     │\n");
-    printf("  │  " GRV_GREEN "📄 " GRV_BLUE "2." GRV_FG " JSON Data    " GRV_GRAY "- application/json           " GRV_PURPLE "│\n");
+    printf("  │  " GRV_GREEN "📄 " GRV_BLUE "2." GRV_FG " JSON Data    " GRV_GRAY "- application/json           " GRV_PURPLE "   │\n");
     printf("  │                                                     │\n");
-    printf("  │  " GRV_RED "🔙 " GRV_BLUE "0." GRV_FG " Back         " GRV_GRAY "- Return to main menu        " GRV_PURPLE "│\n");
+    printf("  │  " GRV_RED "🔙 " GRV_BLUE "0." GRV_FG " Back         " GRV_GRAY "- Return to main menu        " GRV_PURPLE "   │\n");
     printf("  │                                                     │\n");
     printf("  └─────────────────────────────────────────────────────┘\n");
     printf(RESET);
@@ -288,7 +288,7 @@ static void postmethod()
 
 static void ContentApplication()
 {
-  CURL *handle;
+  CURL* handle;
   handle = curl_easy_init();
 
   system("clear");
@@ -301,10 +301,10 @@ static void ContentApplication()
 
   printf(GRV_GRAY "\n  Rules:\n");
   printf("  • Key-value pairs separated by " GRV_YELLOW "'=' "
-         "\neg.\nid=1\n name=jhon\n status=active\n"RESET);
+    "\neg.\nid=1\n name=jhon\n status=active\n"RESET);
   printf(GRV_RED"• Use Proper Formatting\n" RESET);
 
-  char *postdata;
+  char* postdata;
 
   printSeparator();
   int c;
@@ -353,7 +353,7 @@ static void ContentApplication()
       continue;
     }
 
-    char *sep = strchr(entry, '=');
+    char* sep = strchr(entry, '=');
     if (!sep)
     {
       printf(GRV_RED "\nUse Proper formatting (key=value)" RESET);
@@ -361,18 +361,18 @@ static void ContentApplication()
     }
 
     *sep = '\0';
-    char *key = entry;
-    char *value = sep + 1;
+    char* key = entry;
+    char* value = sep + 1;
 
     // Encode key and value separately
-    char *encoded_key = curl_easy_escape(handle, key, 0);
+    char* encoded_key = curl_easy_escape(handle, key, 0);
     if (!encoded_key)
     {
       fprintf(stderr, "Key encoding failed !!\n");
       break;
     }
 
-    char *encoded_value = curl_easy_escape(handle, value, 0);
+    char* encoded_value = curl_easy_escape(handle, value, 0);
     if (!encoded_value)
     {
       fprintf(stderr, "Value encoding failed !!\n");
@@ -386,7 +386,7 @@ static void ContentApplication()
     size_t new_size = current_len + encoded_pair_len + 2; // +1 for '&', +1 for '\0'
 
     // Reallocate memory
-    char *temp = realloc(postdata, new_size);
+    char* temp = realloc(postdata, new_size);
     if (!temp)
     {
       fprintf(stderr, "Memory allocation failed!\n");
@@ -449,14 +449,14 @@ static void ContentApplication()
   curl_easy_cleanup(handle);
 }
 
+
 static void ContentJson()
 {
-
-  CURL *handel = curl_easy_init();
+  CURL* handel = curl_easy_init();
   int c;
   while ((c = getchar()) != '\n' && c != EOF)
     ;
-  char jsondata[1024];
+
   char url[1024];
   printf("\n");
 
@@ -466,50 +466,93 @@ static void ContentJson()
 
   printf(GRV_GRAY "\n  JSON format example:\n");
   printf(GRV_AQUA "  {\n");
-  printf("    \"id\": 21,");
-  printf("    \"name\": \"Flash User\",");
-  printf("    \"email\": \"user@example.com\",");
-  printf("    \"active\": true");
+  printf("    \"id\": 21,\n");
+  printf("    \"name\": \"Flash User\",\n");
+  printf("    \"email\": \"user@example.com\",\n");
+  printf("    \"active\": true\n");
   printf("  }\n" RESET);
 
-  printf(GRV_AQUA "\n  Enter JSON data:\n  > " RESET);
-  fgets(jsondata, sizeof(jsondata), stdin);
-  jsondata[strcspn(jsondata, "\n")] = 0; // remove newline
+  printf(GRV_GRAY "\n  Instructions:\n");
+  printf("  • Enter JSON data line by line\n");
+  printf("  • Press " GRV_YELLOW "Enter twice" GRV_GRAY " to finish input\n");
+  printSeparator();
 
-  printf(GRV_AQUA "   Enter URL:\n  > " RESET);
+  // Dynamic string for JSON data
+  char* jsondata = malloc(1);
+  jsondata[0] = '\0';
+  size_t total_size = 1;
+
+  printf(GRV_AQUA "\n  Enter JSON data:\n" RESET);
+
+  char line[256];
+  int empty_line_count = 0;
+  int line_count = 0;
+
+  while (fgets(line, sizeof(line), stdin) != NULL) {
+    // Check for empty line (just newline)
+    if (strcmp(line, "\n") == 0) {
+      empty_line_count++;
+      if (empty_line_count >= 1 && line_count > 0) break;
+      continue;
+    }
+
+    empty_line_count = 0;
+    line_count++;
+
+    size_t line_len = strlen(line);
+    size_t new_total_size = total_size + line_len;
+
+    char* temp = realloc(jsondata, new_total_size);
+    if (!temp) {
+      fprintf(stderr, "Memory allocation failed!\n");
+      free(jsondata);
+      return;
+    }
+    jsondata = temp;
+
+    if (total_size == 1) { // First line
+      strcpy(jsondata, line);
+    }
+    else {
+      strcat(jsondata, line);
+    }
+
+    total_size = new_total_size;
+  }
+
+  // Remove the trailing newline if exists
+  if (total_size > 1 && jsondata[total_size - 2] == '\n') {
+    jsondata[total_size - 2] = '\0';
+  }
+
+  printf(GRV_AQUA "  Enter URL:\n  > " RESET);
   fgets(url, sizeof(url), stdin);
-  url[strcspn(url, "\n")] = 0; // remove newline
+  url[strcspn(url, "\n")] = 0;
+
   printf(GRV_YELLOW "\n  🚀 Sending JSON request...\n" RESET);
-  struct curl_slist *list = NULL; // creating a new list
+  printf(GRV_GRAY "  JSON being sent:\n%s\n" RESET, jsondata);
 
+  struct curl_slist* list = NULL;
   list = curl_slist_append(list, "Content-Type: application/json");
-  list = curl_slist_append(list, "Accept: application/json ");
+  list = curl_slist_append(list, "Accept: application/json");
 
-  // this is our custom header linkid - list  which will be passed through  CURLOPT_HTTPHEADER
-
-  curl_easy_setopt(handel, CURLOPT_URL, url);         // setting url endpoint
-  curl_easy_setopt(handel, CURLOPT_HTTPHEADER, list); // this willl prepare to send the custom header
-
-  curl_easy_setopt(handel, CURLOPT_POSTFIELDS, jsondata); // this willl prepare to send the json data
+  curl_easy_setopt(handel, CURLOPT_URL, url);
+  curl_easy_setopt(handel, CURLOPT_HTTPHEADER, list);
+  curl_easy_setopt(handel, CURLOPT_POSTFIELDS, jsondata);
 
   CURLcode result = curl_easy_perform(handel);
 
-  if (result != CURLE_OK)
-  {
-    fprintf(stderr, "\nError while sending data %s", curl_easy_strerror(result));
+  if (result != CURLE_OK) {
+    fprintf(stderr, "\nError while sending data: %s", curl_easy_strerror(result));
   }
-  else
-  {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF)
-      ;
-
-    printf("\n Length of data sent %zu bytes ", (size_t)strlen(jsondata));
-    printf("\n !!Data sent sucessfully ..");
-    printf("\n\n Press any key to exit ....");
+  else {
+    printf("\n Length of data sent: %zu bytes", strlen(jsondata));
+    printf("\n ✅ Data sent successfully!");
+    printf("\n\n Press any key to continue...");
     getchar();
   }
 
+  free(jsondata);
   curl_slist_free_all(list);
   curl_easy_cleanup(handel);
 }
