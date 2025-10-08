@@ -231,12 +231,15 @@ Contributions are welcome! Here's how you can help:
 
 # Contributors
 
-Thank you to everyone who has contributed to Flash HTTP CLI! 🙏
+Thanks to everyone who has contributed to Flash HTTP CLI! 🙏
 
 ## Core Team
 - [@aadityansha06](https://github.com/aadityansha06) - Creator & Maintainer
 
 ## Contributors
+
+- [@dexter-xD](https://github.com/dexter-xD) - Enhanced JSON input with multi-line support and improved UI alignment (#2)
+
 - [@sakshamg567](https://github.com/sakshamg567) - Improved form-data input handling (#2)
 
 ---
