@@ -2,6 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <termios.h>
+#include <unistd.h>
+
+
+
+
 
 #define RESET "\033[0m"
 #define BOLD "\033[1m"
@@ -43,6 +49,43 @@ void printFlashHeader()
   printf("╚══════════════════════════════════════════════════════════════════════╝\n");
   printf(RESET "\n");
 }
+
+
+
+static void AI_Api_Function();
+
+
+static void disableEcho() {
+    struct termios oldt, newt;
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~ECHO;
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+}
+
+static void enableEcho() {
+    struct termios oldt;
+    tcgetattr(STDIN_FILENO, &oldt);
+    oldt.c_lflag |= ECHO;
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+}
+
+
+
+typedef struct {
+    char url[1024];
+    char model_name[512];
+    char api_key[512];
+    double temp;
+    char msg[4096];
+} ApiInfo;
+
+
+static void getApiInfo(ApiInfo *info);
+
+
+
+
 void clearInputBuffer()
 {
   int c;
@@ -57,9 +100,13 @@ void printSeparator()
 
 static void ContentApplication(); ///  content-type  application/x-www-form-urlencoded  data
 static void ContentJson();        // sending content type json
-
+static void Apicall(); // make an api call to any AI
 static void postmethod();
 static size_t callBack(char* chunk, size_t size, size_t num_element, void* storage_data); // data is the  storage where recived chunk after processing get stored
+
+
+
+
 
 typedef struct storage
 {
@@ -68,6 +115,31 @@ typedef struct storage
   size_t size;
 } storage;
 
+
+
+
+
+// Escape JSON string to prevent injection
+static char* escapeJsonString(const char *input) {
+    size_t len = strlen(input);
+    char *escaped = malloc(len * 2 + 1);
+    
+    if (!escaped) return NULL;
+    
+    int j = 0;
+    for (size_t i = 0; i < len; i++) {
+        switch (input[i]) {
+            case '"': escaped[j++] = '\\'; escaped[j++] = '"'; break;
+            case '\\': escaped[j++] = '\\'; escaped[j++] = '\\'; break;
+            case '\n': escaped[j++] = '\\'; escaped[j++] = 'n'; break;
+            case '\r': escaped[j++] = '\\'; escaped[j++] = 'r'; break;
+            case '\t': escaped[j++] = '\\'; escaped[j++] = 't'; break;
+            default: escaped[j++] = input[i];
+        }
+    }
+    escaped[j] = '\0';
+    return escaped;
+}
 int display()
 {
   int opt = -1;
@@ -80,6 +152,7 @@ int display()
   printf("│                                                                     │\n");
   printf("│  " GB_GREEN "⚡ " GB_YELLOW "1" GB_FG ". " GB_AQUA "GET Request   " GB_GRAY "│ " GB_FG "Retrieve data from endpoint            " GB_GRAY "      │\n");
   printf("│  " GB_ORANGE "📡 " GB_YELLOW "2" GB_FG ". " GB_PURPLE "POST Request  " GB_GRAY "│ " GB_FG "Send data to server                   " GB_GRAY "       │\n");
+  printf("│  " GB_BLUE "🗝️ " GB_YELLOW "3" GB_FG ". " GB_PURPLE "Ai-Request " GB_GRAY "│ " GB_FG " Make an Api call to any Ai" GB_GRAY "       │\n");
   printf("│  " GB_RED "🚪 " GB_YELLOW "0" GB_FG ". " GB_RED "Exit          " GB_GRAY "│ " GB_FG "Close Flash CLI                       " GB_GRAY "       │\n");
   printf("│                                                                     │\n");
   printf("└─────────────────────────────────────────────────────────────────────┘\n" RESET);
@@ -166,7 +239,11 @@ label:
 
     case 2:
       postmethod();
+          break;
 
+      case 3:
+      AI_Api_Function();
+                break;
     default:
       printf("\n !!! Please make a vaild choice \n");
       break;
@@ -555,4 +632,202 @@ static void ContentJson()
   free(jsondata);
   curl_slist_free_all(list);
   curl_easy_cleanup(handel);
+}
+
+
+
+static void getApiInfo(ApiInfo *info) {
+
+
+  clearInputBuffer();
+
+
+    printf(GRV_AQUA "Enter URL: " GRV_FG);
+    fgets(info->url, sizeof(info->url), stdin);
+    info->url[strcspn(info->url, "\n")] = 0;
+    clearInputBuffer();
+    printf(GRV_AQUA "Model name: " GRV_FG);
+    fgets(info->model_name, sizeof(info->model_name), stdin);
+    info->model_name[strcspn(info->model_name, "\n")] = 0;
+    
+    printf(GRV_AQUA "API Key (hidden): " RESET);
+    disableEcho();
+    fgets(info->api_key, sizeof(info->api_key), stdin);
+    info->api_key[strcspn(info->api_key, "\n")] = 0;
+    enableEcho();
+    printf("\n");
+    
+    printf(GRV_AQUA "Temperature (0-1, default 0.5): " GRV_FG);
+    char temp_input[10];
+    fgets(temp_input, sizeof(temp_input), stdin);
+    if (temp_input[0] != '\n') {
+        info->temp = atof(temp_input);
+        if (info->temp < 0) info->temp = 0;
+        if (info->temp > 1) info->temp = 1;
+    } else {
+        info->temp = 0.5;
+    }
+    
+    printf(GRV_AQUA "Message: " GRV_FG);
+    fgets(info->msg, sizeof(info->msg), stdin);
+    info->msg[strcspn(info->msg, "\n")] = 0;
+    printf(RESET);
+}
+
+static void AI_Api_Function() {
+    printf(GRV_PURPLE "\n╔════════════════════ API Configuration ═══════════════════╗\n");
+    printf("║" GRV_FG "                                                       " GRV_PURPLE "║\n");
+    printf("║ " GRV_FG "Enter your API details" GRV_PURPLE "                          ║\n");
+    printf("║" GRV_FG "                                                       " GRV_PURPLE "║\n");
+    printf("╚═════════════════════════════════════════════════════════════╝" RESET "\n\n");
+ CURL *handle = curl_easy_init();
+    
+    if (!handle) {
+        fprintf(stderr, GRV_RED "Failed to initialize CURL\n" RESET);
+        exit(1);
+    }
+    
+    ApiInfo info = {0};
+    info.temp = 0.5;
+    
+    
+    getApiInfo(&info);
+    
+    // Escape the message for JSON safety
+    char *escaped_msg = escapeJsonString(info.msg);
+    if (!escaped_msg) {
+        fprintf(stderr, GRV_RED "Memory allocation failed\n" RESET);
+        curl_easy_cleanup(handle);
+        exit(1);
+    }
+    
+    char apiauth[1024];
+    char jsonRequest[8192];
+    struct curl_slist *list = NULL;
+    
+    list = curl_slist_append(list, "Content-Type: application/json");
+    
+    printf(GRV_YELLOW "\n Detecting API provider...\n" RESET);
+    
+    // Anthropic
+    if (strstr(info.url, "anthropic.com")) {
+        printf(GRV_GREEN "✓ Anthropic API detected\n" RESET);
+        snprintf(apiauth, sizeof(apiauth), "x-api-key: %s", info.api_key);
+        list = curl_slist_append(list, apiauth);
+        list = curl_slist_append(list, "anthropic-version: 2023-06-01");
+        snprintf(jsonRequest, sizeof(jsonRequest),
+            "{\"model\":\"%s\",\"max_tokens\":1024,\"temperature\":%.1f,\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}]}",
+            info.model_name, info.temp, escaped_msg);
+    }
+    // Google Gemini
+else if (strstr(info.url, "generativelanguage.googleapis.com")) {
+    printf(GRV_GREEN "✓ Google Gemini API detected\n" RESET);
+    char full_url[2048];
+
+    // If URL doesn't already include key, add it
+    if (strchr(info.url, '?')) {
+        snprintf(full_url, sizeof(full_url), "%s&key=%s", info.url, info.api_key);
+    } else {
+        snprintf(full_url, sizeof(full_url), "%s?key=%s", info.url, info.api_key);
+    }
+
+    strcpy(info.url, full_url);
+
+    printf(GRV_YELLOW "Final URL: %s\n\n" RESET, info.url); // it's to debug
+    snprintf(jsonRequest, sizeof(jsonRequest),
+        "{\"contents\":[{\"parts\":[{\"text\":\"%s\"}]}],"
+        "\"generationConfig\":{\"temperature\":%.1f,\"maxOutputTokens\":1024}}",
+        escaped_msg, info.temp);
+}
+
+    // OpenAI
+    else if (strstr(info.url, "openai.com")) {
+        printf(GRV_GREEN "✓ OpenAI API detected\n" RESET);
+        snprintf(apiauth, sizeof(apiauth), "Authorization: Bearer %s", info.api_key);
+        list = curl_slist_append(list, apiauth);
+        snprintf(jsonRequest, sizeof(jsonRequest),
+            "{\"model\":\"%s\",\"max_tokens\":1024,\"temperature\":%.1f,\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}]}",
+            info.model_name, info.temp, escaped_msg);
+    }
+    // Groq
+    else if (strstr(info.url, "groq.com")) {
+        printf(GRV_GREEN "✓ Groq API detected\n" RESET);
+        snprintf(apiauth, sizeof(apiauth), "Authorization: Bearer %s", info.api_key);
+        list = curl_slist_append(list, apiauth);
+        snprintf(jsonRequest, sizeof(jsonRequest),
+            "{\"model\":\"%s\",\"max_tokens\":1024,\"temperature\":%.1f,\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}]}",
+            info.model_name, info.temp, escaped_msg);
+    }
+    // Cohere
+    else if (strstr(info.url, "cohere.ai")) {
+        printf(GRV_GREEN "✓ Cohere API detected\n" RESET);
+        snprintf(apiauth, sizeof(apiauth), "Authorization: Bearer %s", info.api_key);
+        list = curl_slist_append(list, apiauth);
+        snprintf(jsonRequest, sizeof(jsonRequest),
+            "{\"model\":\"%s\",\"max_tokens\":1024,\"temperature\":%.1f,\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}]}",
+            info.model_name, info.temp, escaped_msg);
+    }
+    // Mistral
+    else if (strstr(info.url, "mistral.ai")) {
+        printf(GRV_GREEN "✓ Mistral API detected\n" RESET);
+        snprintf(apiauth, sizeof(apiauth), "Authorization: Bearer %s", info.api_key);
+        list = curl_slist_append(list, apiauth);
+        snprintf(jsonRequest, sizeof(jsonRequest),
+            "{\"model\":\"%s\",\"max_tokens\":1024,\"temperature\":%.1f,\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}]}",
+            info.model_name, info.temp, escaped_msg);
+    }
+    // Default (most APIs use Bearer token)
+    else {
+        printf(GRV_YELLOW "⚠ Using default Bearer token format\n" RESET);
+        snprintf(apiauth, sizeof(apiauth), "Authorization: Bearer %s", info.api_key);
+        list = curl_slist_append(list, apiauth);
+        snprintf(jsonRequest, sizeof(jsonRequest),
+            "{\"model\":\"%s\",\"max_tokens\":1024,\"temperature\":%.1f,\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}]}",
+            info.model_name, info.temp, escaped_msg);
+    }
+    
+    // Prepare response buffer
+  storage response = {0};
+    response.memory = malloc(1);
+    if (!response.memory) {
+        fprintf(stderr, GRV_RED "Memory allocation failed\n" RESET);
+        curl_easy_cleanup(handle);
+        exit(1);
+    }
+    
+    // Set CURL options
+    curl_easy_setopt(handle, CURLOPT_URL, info.url);
+    curl_easy_setopt(handle, CURLOPT_HTTPHEADER, list);
+    curl_easy_setopt(handle, CURLOPT_POSTFIELDS, jsonRequest);
+    curl_easy_setopt(handle, CURLOPT_ENCODING," ");
+    curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, callBack);
+    curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void *)&response);
+    
+    // Handle compression automatically
+    curl_easy_setopt(handle, CURLOPT_ACCEPT_ENCODING, "");
+    
+    printf(GRV_YELLOW "📤 Sending request...\n" RESET);
+    
+    CURLcode result = curl_easy_perform(handle);
+    
+    if (result != CURLE_OK) {
+        fprintf(stderr, GRV_RED "\n❌ Error: %s\n" RESET, curl_easy_strerror(result));
+    } else {
+        printf(GRV_GREEN "\n✅ Request successful!\n" RESET);
+        printf(GRV_YELLOW "Bytes sent: %zu\n\n" RESET, strlen(jsonRequest));
+        printf(GRV_AQUA "═══════════════════ Response ═══════════════════\n");
+        printf(GRV_FG "%s\n" RESET, response.memory);
+        printf(GRV_AQUA "═══════════════════════════════════════════════════\n" RESET);
+    }
+    
+    free(escaped_msg);
+    free(response.memory);
+    curl_slist_free_all(list);
+    curl_easy_cleanup(handle);
+ 
+
+printf(GRV_GRAY "\nPress Enter to return to main menu..." RESET);
+getchar(); 
+
+
 }
