@@ -353,7 +353,7 @@ int main()
 
   }
 
-  Then praising the tag name and comparing it with the verison.h verison if it's npt same then echoing it's an new update
+  Then praising the tag name and comparing it with the flash binary the  compiled one if the compiled one (flash) doesnt matches the binary of latest it will show update  if it's npt same then echoing it's an new update
 
 
 
