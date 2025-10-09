@@ -35,7 +35,7 @@ Download the latest release for Linux:
 
 ```bash
 # Download the latest release
-wget https://github.com/aadityansha06/Flash-Http-cli/releases/download/1.0.1/flash-linux-x64
+wget https://github.com/aadityansha06/Flash-Http-cli/releases/download/1.0.2/flash-linux-x64
 
 # Make it executable
 chmod +x flash-linux-x64
@@ -231,12 +231,15 @@ Contributions are welcome! Here's how you can help:
 
 # Contributors
 
-Thank you to everyone who has contributed to Flash HTTP CLI! 🙏
+Thanks to everyone who has contributed to Flash HTTP CLI! 🙏
 
 ## Core Team
 - [@aadityansha06](https://github.com/aadityansha06) - Creator & Maintainer
 
 ## Contributors
+
+- [@dexter-xD](https://github.com/dexter-xD) - Enhanced JSON input with multi-line support and improved UI alignment (#6)
+
 - [@sakshamg567](https://github.com/sakshamg567) - Improved form-data input handling (#2)
 
 ---
