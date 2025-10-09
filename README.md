@@ -35,7 +35,7 @@ Download the latest release for Linux:
 
 ```bash
 # Download the latest release
-wget https://github.com/aadityansha06/Flash-Http-cli/releases/download/1.0.2/flash-linux-x64
+wget https://github.com/aadityansha06/Flash-Http-cli/releases/download/1.1.0/flash-linux-x64
 
 # Make it executable
 chmod +x flash-linux-x64
