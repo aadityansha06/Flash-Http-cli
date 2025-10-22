@@ -3,6 +3,11 @@
 /// After any modfication made please change the version.h file
 
 /*
+
+
+
+
+
 version number is divided into 3 parts, minor, major and patch
 if a fix is small that it doesnt break anything, like formatting, then we update patch number
 like 1.0.1 -> 1.0.2
@@ -37,8 +42,9 @@ like 1.0.1 -> 1.0.2
 #define TMP "flash.tmp"
 
 static void ContentApplication(); ///  content-type  application/x-www-form-urlencoded  data
-static void ContentJson();        // sending content type json
+static void ContentJson();// sending content type json
 
+                
 static void postmethod();
 static size_t callBack(char *chunk, size_t size, size_t num_element, void *storage_data); // data is the  storage where recived chunk after processing get stored
 
@@ -104,6 +110,8 @@ static size_t callBack(char *chunk, size_t size, size_t num_element, void *stora
 
   return total_chunk_size; // returning this would help libcurl to comapre that the chunk size it sent was exactuly the same we recived
 }
+
+
 
 int download_file(const char *url, const char *outfile)
 {
@@ -290,14 +298,112 @@ typedef struct {
 static void getApiInfo(ApiInfo *info);
 
 
-
-
 void clearInputBuffer()
 {
   int c;
   while ((c = getchar()) != '\n' && c != EOF)
     ;
 }
+
+
+
+
+/*
+
+
+i didn't get any library or any way to write code for copy to clipboard so this part of for copying ro clipbard is written by claude-Ai just this part 
+if you found any bug or want to improve it feel free to go through
+
+
+*/
+
+
+// Add these helper functions at the top of your file
+
+static const char* detectClipboardTool() {
+    // Check for available clipboard tools (only once)
+    static const char *tool = NULL;
+    static int checked = 0;
+    
+    if (checked) return tool;
+    checked = 1;
+    
+    #ifdef __APPLE__
+        if (system("which pbcopy > /dev/null 2>&1") == 0) {
+            tool = "pbcopy";
+            return tool;
+        }
+    #elif __linux__
+        if (system("which xclip > /dev/null 2>&1") == 0) {
+            tool = "xclip -selection clipboard";
+            return tool;
+        }
+        if (system("which xsel > /dev/null 2>&1") == 0) {
+            tool = "xsel --clipboard";
+            return tool;
+        }
+        if (system("which wl-copy > /dev/null 2>&1") == 0) {
+            tool = "wl-copy";
+            return tool;
+        }
+    #endif
+    
+    return NULL;  // No tool found
+}
+
+static int copyToClipboard(const char *text) {
+    const char *cmd = detectClipboardTool();
+    
+    if (!cmd) {
+        return 0;  // Failed
+    }
+    
+    FILE *pipe = popen(cmd, "w");
+    if (!pipe) {
+        return 0;
+    }
+    
+    fprintf(pipe, "%s", text);
+    pclose(pipe);
+    
+    return 1;  // Success
+}
+
+static void saveToFile(const char *code, const char *filename) {
+    FILE *f = fopen(filename, "w");
+    if (f) {
+        fprintf(f, "%s", code);
+        fclose(f);
+        printf(GRV_GREEN "✓ Code saved to: %s\n" RESET, filename);
+    } else {
+        fprintf(stderr, GRV_RED "✗ Failed to save file\n" RESET);
+    }
+}
+
+// Your main copy function
+void copycode(const char *code) {
+    if (copyToClipboard(code)) {
+        printf(GRV_GREEN "\n✓ Code copied to clipboard!\n" RESET);
+    } else {
+        // Clipboard not available - offer file save
+        printf(GRV_YELLOW "\n⚠ No clipboard tool found.\n" RESET);
+        
+        #ifdef __linux__
+        printf(GRV_GRAY "Install: " GRV_AQUA "sudo apt install xclip\n" "\n \t OR select code and copy through (CTRL + SHIFT + C)" RESET);
+        #endif
+        
+        printf(GRV_AQUA "\nWould you like to save to a file instead? [Y/N]: " RESET);
+        
+        char choice;
+        scanf(" %c", &choice);
+        clearInputBuffer();
+        
+        if (choice == 'y' || choice == 'Y') {
+            saveToFile(code, "flash_snippet.txt");
+        }
+    }
+}
+
 
 void printSeparator()
 {
@@ -403,11 +509,169 @@ void geturl()
   else
   {
     printf("\n\n----------Response--------\n\n %s\n", data->memory);
-  }
 
-  curl_easy_cleanup(handel);
+    
+
+
+
+    // Generating code snippet for Get method 
+
+char ch;
+    printf(GB_FG "┌─────────────────────────────────────────────────────────────────────┐\n");
+  printf(GB_AQUA "\n Do you want me to generate GET method Code snippet for this Url 🤔 ?\t"GB_RED"[Y or N] : ");
+  
+  scanf("%c",&ch);
+  if (ch=='y' || ch == 'Y')
+  {
+
+    int opt=-1;
+
+          printf( GRV_ORANGE "\nChoose your language : \t");
+           
+          printf(GRV_GRAY"\n1. Javascript\n 2. Node js \n 3. Python \n 4. C#\n 5. Java \n 0. Back to menu\n");
+      printf(GB_GRAY "\n(Ex- 4 for C#)\n");
+    printf(GB_ORANGE"\nPress the choice :" RESET);
+    scanf("%d",&opt);
+   char snippet[1080];
+
+  switch (opt)
+{
+case 1:
+  
+
+
+     snprintf(snippet,sizeof(snippet),"fetch(\"%s\")\n"
+            "  .then((response) => {\n"
+            "    if (!response.ok) {\n"
+            "      throw new Error(`HTTP error! status: ${response.status}`);\n"
+            "    }\n"
+            "    return response.json();\n"
+            "  })\n"
+            "  .then((data) => {\n"
+            "    console.log(data);\n"
+            "  })\n"
+            "  .catch((error) => {\n"
+            "    console.error(\"Error fetching data:\", error);\n"
+            "  });",url);
+            printf(GB_AQUA "%s\n" RESET, snippet);
+            copycode(snippet);
+
+  break;
+case 2:
+  snprintf(snippet, sizeof(snippet), // node js 
+    "const axios = require('axios');\n\n"
+    "axios.get('%s')\n"
+    "  .then(response => {\n"
+    "    console.log(response.data);\n"
+    "  })\n"
+    "  .catch(error => {\n"
+    "    console.error('Error fetching data:', error);\n"
+    "  });", url);
+      printf(GB_AQUA "%s\n" RESET, snippet);
+            copycode(snippet);
+  break;
+  case 3:
+      snprintf(snippet, sizeof(snippet), // python
+    "import requests\n\n"
+    "url = \"%s\"\n\n"
+    "response = requests.get(url)\n"
+    "if response.status_code == 200:\n"
+    "    print(response.json())\n"
+    "else:\n"
+    "    print(f\"Error: {response.status_code}\")", url);
+     printf(GB_AQUA "%s\n" RESET, snippet);
+            copycode(snippet);
+
+  break;
+
+  case 4:
+snprintf(snippet, sizeof(snippet), // c#
+    "using System;\n"
+    "using System.Net.Http;\n"
+    "using System.Threading.Tasks;\n\n"
+    "class Program {\n"
+    "    static async Task Main() {\n"
+    "        using (HttpClient client = new HttpClient()) {\n"
+    "            try {\n"
+    "                string response = await client.GetStringAsync(\"%s\");\n"
+    "                Console.WriteLine(response);\n"
+    "            } catch (Exception ex) {\n"
+    "                Console.WriteLine($\"Error: {ex.Message}\");\n"
+    "            }\n"
+    "        }\n"
+    "    }\n"
+    "}", url);
+         printf(GB_AQUA "%s\n" RESET, snippet);
+            copycode(snippet);
+
+  break;
+
+  case 5:
+  char java_snippet[4096];
+  snprintf(java_snippet, sizeof(java_snippet),
+   "import java.io.BufferedReader;\n"
+   "import java.io.InputStreamReader;\n"
+   "import java.net.HttpURLConnection;\n"
+   "import java.net.URL;\n\n"
+   "public class Main {\n"
+   "    public static void main(String[] args) throws Exception {\n"
+   "        URL url = new URL(\"%s\");\n"
+   "        HttpURLConnection conn = (HttpURLConnection) url.openConnection();\n"
+   "        conn.setRequestMethod(\"GET\");\n\n"
+   "        int responseCode = conn.getResponseCode();\n"
+   "        if (responseCode == 200) {\n"
+   "            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));\n"
+   "            String inputLine;\n"
+   "            StringBuilder content = new StringBuilder();\n"
+   "            while ((inputLine = in.readLine()) != null) {\n"
+   "                content.append(inputLine);\n"
+   "            }\n"
+   "            in.close();\n"
+   "            System.out.println(content.toString());\n"
+   "        } else {\n"
+   "            System.out.println(\"Error: \" + responseCode);\n"
+   "        }\n"
+   "        conn.disconnect();\n"
+   "    }\n"
+   "}", url);
+
+    printf(GB_AQUA "%s\n" RESET, java_snippet);
+            copycode(java_snippet);
+
+  break;
+
+default:
+   printf("\n !!! Please make a vaild choice \n");
+      
+}
+
+
+ clearInputBuffer();  // Clear any remaining input
+    printf(GRV_GRAY"\n\nPress Enter to return to main menu...");
+    getchar();  // Wait for Enter key
+
+     curl_easy_cleanup(handel);
   free(data->memory);
   free(data);
+    
+  }else{
+      curl_easy_cleanup(handel);
+  free(data->memory);
+  free(data);
+
+
+      return;
+
+        
+
+  }
+  
+
+     
+
+  }
+
+  
 }
 
 int main()
@@ -521,8 +785,7 @@ int main()
 
     case 1:
       geturl();
-      printf("\n\n Press any key to exit ....");
-      getchar();
+    
 
       break;
 
@@ -845,6 +1108,76 @@ static void ContentJson()
     jsondata[total_size - 2] = '\0';
   }
 
+
+
+
+
+// char ch;
+//     printf(GB_FG "┌─────────────────────────────────────────────────────────────────────┐\n");
+//   printf(GB_AQUA "\n Do you want me to generate Post method Code snippet for this Url 🤔 ?\t"GB_RED"[Y or N] : ");
+  
+// scanf(" %c", &ch);  // ← notice the space (we have to keep in mind the space before %c)
+
+
+//   if (ch=='y' || ch == 'Y')
+//   {
+
+//     int opt=-1;
+
+//           printf( GRV_ORANGE "\nChoose your language : \t");
+           
+//           printf(GRV_GRAY"\n1. Javascript\n 2. Node js \n 3. Python \n 4. C#\n 5. Java \n 0. Back to menu\n");
+//       printf(GB_GRAY "\n(Ex- 4 for C#)\n");
+//     printf(GB_ORANGE"\nPress the choice :" RESET);
+//     scanf("%d",&opt);
+//    char snippet[16384]; // to handel upto 16kb of data (especalliy for java)
+
+
+//     switch (opt)
+//     {
+//     case 1:
+//     //js
+//         snprintf(snippet, sizeof(snippet),
+//         "fetch(\"%s\", {\n"
+//         "  method: \"POST\",\n"
+//         "  headers: {\n"
+//         "    \"Content-Type\": \"application/json\"\n"
+//         "  },\n"
+//         "  body: JSON.stringify(%s)\n"
+//         "})\n"
+//         ".then(response => response.json())\n"
+//         ".then(data => console.log(data))\n"
+//         ".catch(error => console.error(\"Error:\", error));",
+//         url, jsondata);
+//         printf(GB_AQUA "%s\n" RESET, snippet);
+//             copycode(snippet);
+
+//     break;
+     
+    
+//     default:
+//       break;
+//     }
+
+
+
+//     printf("\n\n Press any key to continue...");
+//     getchar();
+//     free(jsondata);
+//   curl_slist_free_all(list);
+//   curl_easy_cleanup(handel);
+  
+//   }else{
+//     printf("\n\n Press any key to continue...");
+//     getchar();
+//     free(jsondata);
+//   curl_slist_free_all(list);
+//   curl_easy_cleanup(handel);
+
+//   }
+
+
+
   printf(GRV_AQUA "  Enter URL:\n  > " RESET);
   fgets(url, sizeof(url), stdin);
   url[strcspn(url, "\n")] = 0;
@@ -860,23 +1193,26 @@ static void ContentJson()
   curl_easy_setopt(handel, CURLOPT_HTTPHEADER, list);
   curl_easy_setopt(handel, CURLOPT_POSTFIELDS, jsondata);
 
-  CURLcode result = curl_easy_perform(handel);
+ CURLcode result = curl_easy_perform(handel);
 
-  if (result != CURLE_OK)
-  {
-    fprintf(stderr, "\nError while sending data: %s", curl_easy_strerror(result));
-  }
-  else
-  {
-    printf("\n Length of data sent: %zu bytes", strlen(jsondata));
-    printf("\n ✅ Data sent successfully!");
-    printf("\n\n Press any key to continue...");
-    getchar();
-  }
+if (result != CURLE_OK)
+{
+  fprintf(stderr, "\nError while sending data: %s", curl_easy_strerror(result));
+}
+else
+{
+  printf("\n Length of data sent: %zu bytes", strlen(jsondata));
+  printf("\n ✅ Data sent successfully!");
+}
 
-  free(jsondata);
-  curl_slist_free_all(list);
-  curl_easy_cleanup(handel);
+// Clear buffer and wait for user (works for both success and error)
+clearInputBuffer();
+printf("\n\n Press any key to continue...");
+getchar();
+
+free(jsondata);
+curl_slist_free_all(list);
+curl_easy_cleanup(handel);
 }
 
 
