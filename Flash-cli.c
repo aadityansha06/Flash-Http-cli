@@ -1026,6 +1026,10 @@ static void ContentApplication()
   curl_easy_cleanup(handle);
 }
 
+// Replace the ContentJson() function with this fixed version:
+
+// Replace the ContentJson() function with this fixed version:
+
 static void ContentJson()
 {
   CURL *handel = curl_easy_init();
@@ -1108,76 +1112,6 @@ static void ContentJson()
     jsondata[total_size - 2] = '\0';
   }
 
-
-
-
-
-// char ch;
-//     printf(GB_FG "┌─────────────────────────────────────────────────────────────────────┐\n");
-//   printf(GB_AQUA "\n Do you want me to generate Post method Code snippet for this Url 🤔 ?\t"GB_RED"[Y or N] : ");
-  
-// scanf(" %c", &ch);  // ← notice the space (we have to keep in mind the space before %c)
-
-
-//   if (ch=='y' || ch == 'Y')
-//   {
-
-//     int opt=-1;
-
-//           printf( GRV_ORANGE "\nChoose your language : \t");
-           
-//           printf(GRV_GRAY"\n1. Javascript\n 2. Node js \n 3. Python \n 4. C#\n 5. Java \n 0. Back to menu\n");
-//       printf(GB_GRAY "\n(Ex- 4 for C#)\n");
-//     printf(GB_ORANGE"\nPress the choice :" RESET);
-//     scanf("%d",&opt);
-//    char snippet[16384]; // to handel upto 16kb of data (especalliy for java)
-
-
-//     switch (opt)
-//     {
-//     case 1:
-//     //js
-//         snprintf(snippet, sizeof(snippet),
-//         "fetch(\"%s\", {\n"
-//         "  method: \"POST\",\n"
-//         "  headers: {\n"
-//         "    \"Content-Type\": \"application/json\"\n"
-//         "  },\n"
-//         "  body: JSON.stringify(%s)\n"
-//         "})\n"
-//         ".then(response => response.json())\n"
-//         ".then(data => console.log(data))\n"
-//         ".catch(error => console.error(\"Error:\", error));",
-//         url, jsondata);
-//         printf(GB_AQUA "%s\n" RESET, snippet);
-//             copycode(snippet);
-
-//     break;
-     
-    
-//     default:
-//       break;
-//     }
-
-
-
-//     printf("\n\n Press any key to continue...");
-//     getchar();
-//     free(jsondata);
-//   curl_slist_free_all(list);
-//   curl_easy_cleanup(handel);
-  
-//   }else{
-//     printf("\n\n Press any key to continue...");
-//     getchar();
-//     free(jsondata);
-//   curl_slist_free_all(list);
-//   curl_easy_cleanup(handel);
-
-//   }
-
-
-
   printf(GRV_AQUA "  Enter URL:\n  > " RESET);
   fgets(url, sizeof(url), stdin);
   url[strcspn(url, "\n")] = 0;
@@ -1193,28 +1127,197 @@ static void ContentJson()
   curl_easy_setopt(handel, CURLOPT_HTTPHEADER, list);
   curl_easy_setopt(handel, CURLOPT_POSTFIELDS, jsondata);
 
- CURLcode result = curl_easy_perform(handel);
+  CURLcode result = curl_easy_perform(handel);
 
-if (result != CURLE_OK)
-{
-  fprintf(stderr, "\nError while sending data: %s", curl_easy_strerror(result));
+  if (result != CURLE_OK)
+  {
+    fprintf(stderr, "\nError while sending data: %s", curl_easy_strerror(result));
+  }
+  else
+  {
+    printf("\n Length of data sent: %zu bytes", strlen(jsondata));
+    printf("\n ✅ Data sent successfully!");
+  }
+
+  // NOW ASK FOR CODE SNIPPET GENERATION
+  char ch;
+  printf("\n\n");
+  printf(GB_FG "┌─────────────────────────────────────────────────────────────────────┐\n");
+  printf(GB_AQUA "\n Do you want me to generate POST method Code snippet? " GB_RED "[Y or N]: " RESET);
+  
+  // Read single character with proper buffer handling
+  if (scanf(" %c", &ch) != 1) {
+    ch = 'n';
+  }
+  clearInputBuffer();  // Clear buffer AFTER reading choice
+
+  if (ch == 'y' || ch == 'Y')
+  {
+    int opt = -1;
+
+    printf(GRV_ORANGE "\nChoose your language:\n");
+    printf(GRV_GRAY "1. Javascript\n2. Node.js\n3. Python\n4. C#\n5. Java\n0. Skip\n" RESET);
+    printf(GB_GRAY "(Ex: 4 for C#)\n");
+    printf(GB_ORANGE "Press the choice: " RESET);
+    
+    if (scanf("%d", &opt) != 1) {
+      opt = 0;
+    }
+    clearInputBuffer();  // Clear after reading option
+
+    // Allocate large buffer for Java snippets
+    char *snippet = malloc(16384);
+    if (!snippet)
+    {
+      fprintf(stderr, "Memory allocation failed for snippet!\n");
+      free(jsondata);
+      curl_slist_free_all(list);
+      curl_easy_cleanup(handel);
+      return;
+    }
+
+    switch (opt)
+    {
+    case 1: // JavaScript
+      snprintf(snippet, 16384,
+               "fetch(\"%s\", {\n"
+               "  method: \"POST\",\n"
+               "  headers: {\n"
+               "    \"Content-Type\": \"application/json\"\n"
+               "  },\n"
+               "  body: JSON.stringify(%s)\n"
+               "})\n"
+               ".then(response => response.json())\n"
+               ".then(data => console.log(data))\n"
+               ".catch(error => console.error(\"Error:\", error));",
+               url, jsondata);
+      printf(GB_AQUA "\n%s\n" RESET, snippet);
+      copycode(snippet);
+      break;
+
+    case 2: // Node.js
+      snprintf(snippet, 16384,
+               "const axios = require('axios');\n\n"
+               "axios.post('%s', %s)\n"
+               "  .then(response => {\n"
+               "    console.log(response.data);\n"
+               "  })\n"
+               "  .catch(error => {\n"
+               "    console.error('Error:', error);\n"
+               "  });",
+               url, jsondata);
+      printf(GB_AQUA "\n%s\n" RESET, snippet);
+      copycode(snippet);
+      break;
+
+    case 3: // Python
+      snprintf(snippet, 16384,
+               "import requests\nimport json\n\n"
+               "url = \"%s\"\n"
+               "data = %s\n\n"
+               "response = requests.post(url, json=data)\n"
+               "if response.status_code == 200:\n"
+               "    print(response.json())\n"
+               "else:\n"
+               "    print(f\"Error: {response.status_code}\")",
+               url, jsondata);
+      printf(GB_AQUA "\n%s\n" RESET, snippet);
+      copycode(snippet);
+      break;
+
+    case 4: // C#
+      snprintf(snippet, 16384,
+               "using System;\n"
+               "using System.Net.Http;\n"
+               "using System.Text;\n"
+               "using System.Threading.Tasks;\n\n"
+               "class Program {\n"
+               "    static async Task Main() {\n"
+               "        using (HttpClient client = new HttpClient()) {\n"
+               "            string json = @\"%s\";\n"
+               "            var content = new StringContent(json, Encoding.UTF8, \"application/json\");\n"
+               "            try {\n"
+               "                HttpResponseMessage response = await client.PostAsync(\"%s\", content);\n"
+               "                string result = await response.Content.ReadAsStringAsync();\n"
+               "                Console.WriteLine(result);\n"
+               "            } catch (Exception ex) {\n"
+               "                Console.WriteLine($\"Error: {ex.Message}\");\n"
+               "            }\n"
+               "        }\n"
+               "    }\n"
+               "}",
+               jsondata, url);
+      printf(GB_AQUA "\n%s\n" RESET, snippet);
+      copycode(snippet);
+      break;
+
+    case 5: // Java
+      snprintf(snippet, 16384,
+               "import java.io.*;\n"
+               "import java.net.HttpURLConnection;\n"
+               "import java.net.URL;\n\n"
+               "public class Main {\n"
+               "    public static void main(String[] args) throws Exception {\n"
+               "        URL url = new URL(\"%s\");\n"
+               "        HttpURLConnection conn = (HttpURLConnection) url.openConnection();\n"
+               "        conn.setRequestMethod(\"POST\");\n"
+               "        conn.setRequestProperty(\"Content-Type\", \"application/json\");\n"
+               "        conn.setDoOutput(true);\n\n"
+               "        String jsonData = \"%s\";\n\n"
+               "        try (OutputStream os = conn.getOutputStream()) {\n"
+               "            byte[] input = jsonData.getBytes(\"utf-8\");\n"
+               "            os.write(input, 0, input.length);\n"
+               "        }\n\n"
+               "        int responseCode = conn.getResponseCode();\n"
+               "        if (responseCode == 200) {\n"
+               "            BufferedReader in = new BufferedReader(\n"
+               "                new InputStreamReader(conn.getInputStream()));\n"
+               "            String inputLine;\n"
+               "            StringBuilder content = new StringBuilder();\n"
+               "            while ((inputLine = in.readLine()) != null) {\n"
+               "                content.append(inputLine);\n"
+               "            }\n"
+               "            in.close();\n"
+               "            System.out.println(content.toString());\n"
+               "        } else {\n"
+               "            System.out.println(\"Error: \" + responseCode);\n"
+               "        }\n"
+               "        conn.disconnect();\n"
+               "    }\n"
+               "}",
+               url, jsondata);
+      printf(GB_AQUA "\n%s\n" RESET, snippet);
+      copycode(snippet);
+      break;
+
+    case 0:
+      printf(GRV_GRAY "Skipped code generation.\n" RESET);
+      break;
+
+    default:
+      printf(GRV_RED "\n!!! Invalid choice\n" RESET);
+      break;
+    }
+
+    free(snippet);
+    
+    clearInputBuffer();
+    printf(GRV_GRAY "\n\nPress Enter to continue..." RESET);
+    getchar();
+  }
+  else
+  {
+    printf(GRV_GRAY "\nSkipped code generation.\n" RESET);
+    clearInputBuffer();
+    printf(GRV_GRAY "\nPress Enter to continue..." RESET);
+    getchar();
+  }
+
+  // Cleanup
+  free(jsondata);
+  curl_slist_free_all(list);
+  curl_easy_cleanup(handel);
 }
-else
-{
-  printf("\n Length of data sent: %zu bytes", strlen(jsondata));
-  printf("\n ✅ Data sent successfully!");
-}
-
-// Clear buffer and wait for user (works for both success and error)
-clearInputBuffer();
-printf("\n\n Press any key to continue...");
-getchar();
-
-free(jsondata);
-curl_slist_free_all(list);
-curl_easy_cleanup(handel);
-}
-
 
 
 static void getApiInfo(ApiInfo *info) {
