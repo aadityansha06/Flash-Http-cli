@@ -20,21 +20,14 @@ like 1.0.1 -> 1.0.2
 
 */
 
-#include <curl/curl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <termios.h>
-#include <unistd.h>
+
+
+#include"lib/header-file.h"
 
 
 
 
-#include <unistd.h>
-#include "ui/colors.h"
-#include <sys/stat.h>
 
-#include "version.h"
 
 #define REPO "aadityansha06/Flash-Http-cli"
 #define LINUX_BIN_NAME "flash-linux-x64"
@@ -51,6 +44,15 @@ static size_t callBack(char *chunk, size_t size, size_t num_element, void *stora
 static int download_file(const char *url, const char *outfile);
 static int get_latest_tag(char *tag, size_t maxlen);
 static void self_update(const char *download_url);
+
+
+
+
+void APi_performance(){
+
+  
+}
+
 typedef struct storage
 {
 
