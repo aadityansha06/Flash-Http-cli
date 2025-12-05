@@ -1,0 +1,52 @@
+name: Auto Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    types: [closed]
+
+jobs:
+  create_release:
+    if: github.event.pull_request.merged == true || github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract version from version.h
+        id: version
+        run: |
+          ver=$(grep 'RELEASE_VERSION' lib/version.h | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "version=$ver" >> $GITHUB_OUTPUT
+
+      - name: Set release name
+        id: rel_name
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "release_name=${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
+          else
+            echo "release_name=${{ github.event.head_commit.message }}" >> $GITHUB_OUTPUT
+          fi
+
+      # ---------- BUILD SECTION ----------
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
+
+      - name: Build binary
+        run: |
+          gcc Flash-cli.c -o flash-linux-x64 -lcurl
+      # -----------------------------------
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: ${{ steps.rel_name.outputs.release_name }}
+          files: |
+            flash-linux-x64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
