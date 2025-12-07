@@ -1,52 +1,86 @@
-name: Auto Release
+name: Flash CLI CI + Conditional Release
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: ["main"]
   pull_request:
-    types: [closed]
 
 jobs:
-  create_release:
-    if: github.event.pull_request.merged == true || github.event_name == 'push'
+
+  # ------------------------------
+  # 1. CI JOB (Runs on PR + Push)
+  # ------------------------------
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install GCC
+        run: sudo apt-get install build-essential -y
+
+      - name: Build C Project
+        run: gcc src/*.c -o flash-http
+
+      - name: Run Tests
+        run: |
+          if [ -d "tests" ]; then
+            for f in tests/*.sh; do
+              bash "$f"
+            done
+          else
+            echo "No tests directory"
+          fi
+
+  # -------------------------------------------------------
+  # 2. RELEASE JOB (Runs only on push to main, PR merged)
+  # -------------------------------------------------------
+  release:
+    needs: ci
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'Merge pull request') == false
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Extract version from version.h
-        id: version
+      # Detect if version.h changed
+      - name: Check if version file changed
+        id: check_version
         run: |
-          ver=$(grep 'RELEASE_VERSION' lib/version.h | sed -E 's/.*"([^"]+)".*/\1/')
-          echo "version=$ver" >> $GITHUB_OUTPUT
-
-      - name: Set release name
-        id: rel_name
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "release_name=${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
+          git fetch origin main --depth=2
+          if git diff --name-only HEAD^ HEAD | grep -q "lib/version.h"; then
+            echo "changed=true" >> $GITHUB_ENV
           else
-            echo "release_name=${{ github.event.head_commit.message }}" >> $GITHUB_OUTPUT
+            echo "changed=false" >> $GITHUB_ENV
           fi
 
-      # ---------- BUILD SECTION ----------
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
+      - name: Stop if version did not change
+        if: env.changed == 'false'
+        run: |
+          echo "version.h not changed → Skip release"
+          exit 0
+
+      - name: Extract version from version.h
+        run: |
+          VERSION=$(grep "RELEASE_VERSION" lib/version.h | cut -d '"' -f2)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Build binary
-        run: |
-          gcc Flash-cli.c -o flash-linux-x64 -lcurl
-      # -----------------------------------
+        run: gcc src/*.c -o flash-http
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
+      # Release Title Logic
+      - name: Decide Release Title
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "TITLE=${{ github.event.head_commit.message }}" >> $GITHUB_ENV
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.version.outputs.version }}
-          name: ${{ steps.rel_name.outputs.release_name }}
-          files: |
-            flash-linux-x64
+          name: "${{ env.TITLE }} (v${{ env.VERSION }})"
+          tag_name: "v${{ env.VERSION }}"
+          files: flash-http
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
