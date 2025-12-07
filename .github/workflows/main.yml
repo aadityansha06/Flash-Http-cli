@@ -20,7 +20,7 @@ jobs:
         run: sudo apt-get install build-essential -y
 
       - name: Build C Project
-        run: gcc src/*.c -o flash-http
+        run: gcc Flash-cli.c -o flash-linux-x64 -lcurl
 
       - name: Run Tests
         run: |
