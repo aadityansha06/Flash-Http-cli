@@ -19,8 +19,11 @@ jobs:
       - name: Install GCC
         run: sudo apt-get install build-essential -y
       
-      - name: Install CURl
-        run: pkg install clang curl
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang curl
+
 
 
       
