@@ -18,7 +18,12 @@ jobs:
 
       - name: Install GCC
         run: sudo apt-get install build-essential -y
+      
+      - name: Install CURl
+        run: pkg install clang curl
 
+
+      
       - name: Build C Project
         run: gcc Flash-cli.c -o flash-linux-x64 -lcurl
 
