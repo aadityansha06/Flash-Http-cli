@@ -16,17 +16,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install GCC
-        run: sudo apt-get install build-essential -y
-      
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang curl
+          sudo apt-get install -y \
+            build-essential \
+            clang \
+            curl \
+            libcurl4-openssl-dev
 
-
-
-      
       - name: Build C Project
         run: gcc Flash-cli.c -o flash-linux-x64 -lcurl
 
@@ -41,16 +39,25 @@ jobs:
           fi
 
   # -------------------------------------------------------
-  # 2. RELEASE JOB (Runs only on push to main, PR merged)
+  # 2. RELEASE JOB (Runs only on push to main)
   # -------------------------------------------------------
   release:
     needs: ci
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, 'Merge pull request') == false
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            clang \
+            curl \
+            libcurl4-openssl-dev
 
       # Detect if version.h changed
       - name: Check if version file changed
@@ -66,7 +73,7 @@ jobs:
       - name: Stop if version did not change
         if: env.changed == 'false'
         run: |
-          echo "version.h not changed → Skip release"
+          echo "version.h not changed → skip release"
           exit 0
 
       - name: Extract version from version.h
@@ -74,21 +81,20 @@ jobs:
           VERSION=$(grep "RELEASE_VERSION" lib/version.h | cut -d '"' -f2)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Build binary
-        run: gcc src/*.c -o flash-http
+      # Linux build of final binary
+      - name: Build Linux binary
+        run: gcc Flash-cli.c -o flash-linux-x64 -lcurl
 
-      # Release Title Logic
+      # Determine release title
       - name: Decide Release Title
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            echo "TITLE=${{ github.event.head_commit.message }}" >> $GITHUB_ENV
-          fi
+          echo "TITLE=${{ github.event.head_commit.message }}" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           name: "${{ env.TITLE }} (v${{ env.VERSION }})"
           tag_name: "v${{ env.VERSION }}"
-          files: flash-http
+          files: flash-linux-x64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
