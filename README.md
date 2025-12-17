@@ -31,12 +31,18 @@ Works on Linux, macOS, and Termux
 Full disclosure: I used AI to help format these screenshot sections and the fancy output examples because honestly I don't have time to mess with that documentation UI stuff.
 
 ### Main Menu
+![Flash Main Menu](screenshots/main-menu.png)
+
 Clean and intuitive main interface with AI API option
 
 ### POST Method Selection
+![POST Method](screenshots/post.png)
+
 Easy content-type selection for POST requests
 
 ### AI API Request
+![AI API Request](screenshots/ai-api.png)
+
 Integrated AI API support with auto-detection for major providers
 
 ## Getting started
