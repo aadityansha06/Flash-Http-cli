@@ -1,45 +1,49 @@
-# ⚡ Flash HTTP CLI
+# Flash HTTP CLI
 
 > A fast, simple, and powerful HTTP client for your terminal - like Postman, but in CLI with AI API support
 
-[![Release](https://img.shields.io/github/v/release/aadityansha06/Flash-Http-cli?style=for-the-badge&color=green)](https://github.com/aadityansha06/Flash-Http-cli/releases)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-[![Language](https://img.shields.io/badge/Language-C-orange.svg?style=for-the-badge)](https://en.wikipedia.org/wiki/C_(programming_language))
+Flash is a terminal-based HTTP client that brings API testing to your command line. Built with C and libcurl, it's got a clean Gruvbox-themed interface that's easy on the eyes. Now with integrated AI API support for Claude, GPT, Gemini, and more.
 
-Flash is a beautiful, terminal-based HTTP client that brings the power of API testing to your command line. Built with C and libcurl, it offers a clean Gruvbox-themed interface that's easy on the eyes and powerful in functionality. Now with integrated AI API support for Claude, GPT, Gemini, and more!
+## What it does
 
-## ✨ Features
+Make GET requests to fetch data from REST APIs with auto-generated code snippets
 
-- 🌐 **GET Requests** - Fetch data from any REST API with auto-generated code snippets
-- 📤 **POST Requests** - Send form data and JSON payloads with multi-line support
-- 🤖 **AI API Integration** - Direct API calls to Claude, GPT, Gemini, Groq, Cohere, and Mistral
-- 📋 **Code Generation** - Auto-generate request code in JavaScript, Node.js, Python, C#, and Java
-- 📄 **Smart Clipboard** - Copy generated code directly to clipboard (supports xclip, xsel, wl-copy, pbcopy)
-- 🎨 **Beautiful UI** - Gruvbox dark theme with intuitive navigation
-- ⚡ **Fast & Lightweight** - Built in C for maximum performance
-- 🔄 **Auto-Updates** - Built-in self-update mechanism from GitHub releases
-- 🛡️ **Memory Safe** - Proper memory management and error handling
-- 📱 **Cross-Platform** - Works on Linux, macOS, and Termux
+Send POST requests with form data and JSON payloads, supports multi-line input
 
-## 📸 Screenshots
+Direct API calls to Claude, GPT, Gemini, Groq, Cohere, and Mistral
+
+Auto-generate request code in JavaScript, Node.js, Python, C#, and Java
+
+Copy generated code directly to clipboard (works with xclip, xsel, wl-copy, pbcopy)
+
+Gruvbox dark theme with intuitive navigation
+
+Built in C for maximum performance
+
+Built-in self-update mechanism from GitHub releases
+
+Proper memory management and error handling
+
+Works on Linux, macOS, and Termux
+
+## Screenshots
+
+Full disclosure: I used AI to help format these screenshot sections and the fancy output examples because honestly I don't have time to mess with that documentation UI stuff.
 
 ### Main Menu
-![Flash Main Menu](screenshots/main-menu.png)
-*Clean and intuitive main interface with AI API option*
+Clean and intuitive main interface with AI API option
 
 ### POST Method Selection
-![POST Method](screenshots/post.png)
-*Easy content-type selection for POST requests*
+Easy content-type selection for POST requests
 
 ### AI API Request
-![AI API Request](screenshots/ai-api.png)
-*Integrated AI API support with auto-detection for major providers*
+Integrated AI API support with auto-detection for major providers
 
-## 🚀 Quick Start
+## Getting started
 
 ### Download Pre-built Binary (Recommended)
 
-Download the latest release for Linux:
+Grab the latest release for Linux:
 
 ```bash
 # Download the latest release
@@ -54,11 +58,9 @@ chmod +x flash-linux-x64
 
 ### Build from Source
 
-#### Prerequisites
+#### What you need
 
-- GCC compiler
-- libcurl development libraries
-- Make (optional)
+GCC compiler, libcurl development libraries, and optionally Make.
 
 #### Ubuntu/Debian
 ```bash
@@ -86,7 +88,7 @@ brew install curl
 # pbcopy is pre-installed on macOS
 ```
 
-#### Compilation
+#### Compiling
 
 ```bash
 # Clone the repository
@@ -120,32 +122,19 @@ clang Flash-cli.c -o flash -lcurl
 ./flash
 ```
 
-**Note:** You may see warnings about getchar() return values or empty-body while loops during compilation. These warnings are safe to ignore — the program will still run fine.
+Note: You might see some warnings about getchar() return values or empty-body while loops during compilation. They're safe to ignore - the program runs fine.
 
-## 🔧 Usage
+## How to use it
 
 ### GET Requests
 
-1. Select option `1` from the main menu
-2. Enter the URL (e.g., `https://jsonplaceholder.typicode.com/posts/1`)
-3. View the formatted response
-4. **New!** Generate code snippets in your preferred language:
-   - JavaScript (Fetch API)
-   - Node.js (Axios)
-   - Python (Requests)
-   - C# (HttpClient)
-   - Java (HttpURLConnection)
+Pick option 1 from the main menu, enter the URL like `https://jsonplaceholder.typicode.com/posts/1`, check out the response, and then generate code snippets if you want them in JavaScript, Node.js, Python, C#, or Java.
 
 ### POST Requests - Form Data
 
-1. Select option `2` from the main menu
-2. Choose `1` for Form Data
-3. Enter the number of fields
-4. Enter each field in format: `key=value`
-5. Enter the target URL
-6. Send the request and optionally generate code snippets
+Select option 2, choose 1 for Form Data, enter how many fields you need, then type each field as `key=value`, enter the target URL, and send it. You can generate code snippets after.
 
-**Example:**
+Example:
 ```
 Number of fields: 3
 Field 1: name=John Doe
@@ -155,14 +144,9 @@ Field 3: age=25
 
 ### POST Requests - JSON
 
-1. Select option `2` from the main menu
-2. Choose `2` for JSON Data
-3. Enter JSON data line by line
-4. Press **Enter twice** to finish input
-5. Enter the target URL
-6. Send the request and optionally generate code snippets
+Select option 2, choose 2 for JSON Data, enter your JSON line by line, press Enter twice when done, then enter the URL and send.
 
-**Example:**
+Example:
 ```json
 {
   "name": "Flash User",
@@ -171,26 +155,13 @@ Field 3: age=25
 }
 ```
 
-### AI API Requests (NEW!)
+### AI API Requests
 
-1. Select option `3` from the main menu
-2. Enter the API endpoint URL
-3. Enter the model name (e.g., `claude-3-5-sonnet-20241022`, `gpt-4`, `gemini-pro`)
-4. Enter your API key (input is hidden for security)
-5. Set temperature (0-1, default 0.5)
-6. Enter your message/prompt
-7. View the AI response
+This is the new feature. Select option 3, enter the API endpoint URL, the model name (like `claude-3-5-sonnet-20241022`, `gpt-4`, `gemini-pro`), your API key (it's hidden while you type), set the temperature between 0 and 1 (default is 0.5), enter your message, and check out the AI response.
 
-**Supported AI Providers:**
-- **Anthropic Claude** - Auto-detects `anthropic.com` URLs
-- **OpenAI GPT** - Auto-detects `openai.com` URLs
-- **Google Gemini** - Auto-detects `generativelanguage.googleapis.com` URLs
-- **Groq** - Auto-detects `groq.com` URLs
-- **Cohere** - Auto-detects `cohere.ai` URLs
-- **Mistral** - Auto-detects `mistral.ai` URLs
-- **Custom APIs** - Falls back to Bearer token authentication
+Supported providers: Anthropic Claude, OpenAI GPT, Google Gemini, Groq, Cohere, Mistral, and custom APIs with Bearer token auth.
 
-## 📚 Examples
+## Examples
 
 ### Testing REST APIs
 
@@ -243,78 +214,40 @@ Temperature: 0.8
 Message: Generate a creative story about a robot
 ```
 
-## 🎨 Theme
+## Theme
 
-Flash uses the **Gruvbox Dark** color scheme for a comfortable terminal experience:
+Flash uses the Gruvbox Dark color scheme - dark background that's easy on the eyes, warm yellows and oranges for highlights, bright green for success messages, clear red for errors, cool blue accents, and purple for AI features.
 
-- 🟤 **Background**: Dark, easy on the eyes
-- 🟨 **Highlights**: Warm yellows and oranges
-- 🟩 **Success**: Bright green indicators  
-- 🟥 **Errors**: Clear red error messages
-- 🔵 **Info**: Cool blue accents
-- 🟪 **Special**: Purple for AI features
-
-## 🔧 Advanced Features
+## Features worth mentioning
 
 ### Auto-Update System
 
-Flash includes a built-in auto-update mechanism:
-- Checks GitHub releases on startup
-- Compares current version with latest release
-- Prompts for update if new version available
-- Downloads and installs updates automatically
-- Backs up current version before updating
+Flash checks GitHub releases when you start it, compares your version with the latest one, asks if you want to update when there's a new version, downloads and installs updates automatically, and backs up your current version before updating.
 
-To skip update checks, set:
+Skip update checks with:
 ```bash
 export FLASH_SKIP_UPDATE=1
 ```
 
 ### Code Snippet Generation
 
-After making GET or POST requests, Flash can generate production-ready code snippets:
-
-**Supported Languages:**
-1. **JavaScript** - Modern Fetch API with error handling
-2. **Node.js** - Axios with promises
-3. **Python** - Requests library
-4. **C#** - HttpClient with async/await
-5. **Java** - HttpURLConnection with proper resource management
+After making requests, Flash can generate production-ready code in JavaScript (Fetch API), Node.js (Axios), Python (Requests), C# (HttpClient), and Java (HttpURLConnection).
 
 ### Smart Clipboard Integration
 
-Flash automatically detects and uses available clipboard tools:
-- **Linux**: xclip, xsel, wl-copy (Wayland)
-- **macOS**: pbcopy (built-in)
-- **Fallback**: Saves to `flash_snippet.txt` if no clipboard tool found
+Flash automatically finds and uses whatever clipboard tool you have - xclip, xsel, wl-copy on Linux, pbcopy on macOS. If it can't find any, it saves to `flash_snippet.txt` instead.
 
 ### JSON Security
 
-Flash includes automatic JSON escaping to prevent injection:
-- Escapes quotes, backslashes, newlines
-- Handles special characters properly
-- Validates JSON structure
+Automatically escapes quotes, backslashes, newlines, handles special characters, and validates JSON structure to prevent injection attacks.
 
 ### URL Encoding
 
-Form data is automatically URL-encoded:
-```bash
-# Spaces become +
-name=John Doe → name=John+Doe
+Form data gets URL-encoded automatically. Spaces become +, special characters use % encoding.
 
-# Special characters use % encoding  
-email=user@domain.com → email=user%40domain.com
-```
+## Contributing
 
-## 🤝 Contributing
-
-Contributions are welcome! Here's how you can help:
-
-1. 🍴 Fork the repository
-2. 🌿 Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. 💾 Commit your changes (`git commit -m 'Add amazing feature'`)
-4. 🚀 Push to the branch (`git push origin feature/amazing-feature`)
-5. 🎯 Open a Pull Request
+Want to help? Fork the repo, create a feature branch, commit your changes, push to the branch, and open a pull request.
 
 ### Development Setup
 
@@ -334,20 +267,17 @@ gcc -g -Wall -o flash-dev Flash-cli.c -lcurl
 
 ## Contributors
 
-Thanks to everyone who has contributed to Flash HTTP CLI! 🙏
+Thanks to everyone who contributed:
 
-### Core Team
-- [@aadityansha06](https://github.com/aadityansha06) - Creator & Maintainer
+Core Team: @aadityansha06 - Creator and Maintainer
 
-### Contributors
-- [@dexter-xD](https://github.com/dexter-xD) - Enhanced JSON input with multi-line support and improved UI alignment (#6)
-- [@sakshamg567](https://github.com/sakshamg567) - Improved form-data input handling (#2)
+Contributors:
+- @dexter-xD - Enhanced JSON input with multi-line support and improved UI alignment
+- @sakshamg567 - Improved form-data input handling
 
----
+Want to contribute? Check out the open issues or raise a PR.
 
-Want to contribute? Check out our open issues or raise a PR! 😊
-
-## 🛠️ Project Structure
+## Project Structure
 
 ```
 Flash-Http-cli/
@@ -361,59 +291,37 @@ Flash-Http-cli/
 └── screenshots/          # UI screenshots
 ```
 
-## 🐛 Known Issues
+## Known problems
 
-- Windows support requires WSL or manual libcurl setup
-- Very large responses (>1GB) may cause memory issues
-- Clipboard functionality requires additional packages on some systems
+Windows support needs WSL or manual libcurl setup. Really large responses over 1GB might cause memory issues. Clipboard functionality needs extra packages on some systems.
 
-## 📋 Roadmap
+## What's coming next
 
-- [x] GET requests with response display
-- [x] POST requests (form-data and JSON)
-- [x] Code snippet generation (5 languages)
-- [x] AI API integration
-- [x] Auto-update system
-- [x] Smart clipboard support
-- [ ] Custom headers management
-- [ ] Request/Response history
-- [ ] Configuration file support
-- [ ] Response syntax highlighting
-- [ ] Request templates
-- [ ] Environment variables support
-- [ ] API authentication presets
-- [ ] Response filtering and parsing
+Already done: GET requests with response display, POST requests (form-data and JSON), code snippet generation in 5 languages, AI API integration, auto-update system, smart clipboard support.
 
-## 🔒 Security
+Still working on: Custom headers management, request/response history, configuration file support, response syntax highlighting, request templates, environment variables support, API authentication presets, response filtering and parsing.
 
-- API keys are hidden during input (terminal echo disabled)
-- No sensitive data is logged or stored
-- Memory is properly freed after use
-- Input validation for all user data
-- JSON escaping prevents injection attacks
+## Security stuff
 
-## 📄 License
+API keys are hidden while you type them. No sensitive data gets logged or stored. Memory is properly freed after use. All user input gets validated. JSON escaping prevents injection attacks.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## License
 
-## 💻 System Requirements
+MIT License - do whatever you want with it.
+
+## System Requirements
 
 ### Minimum
-- Linux/macOS/Termux
-- 1 MB free disk space
-- libcurl 7.x or higher
+Linux/macOS/Termux, 1 MB free disk space, libcurl 7.x or higher.
 
 ### Recommended
-- Linux/macOS with clipboard tools installed
-- 10 MB free disk space for updates
-- Modern terminal with UTF-8 support
-- Internet connection for API requests
+Linux/macOS with clipboard tools installed, 10 MB free disk space for updates, modern terminal with UTF-8 support, internet connection for API requests.
 
-## 🆘 Troubleshooting
+## Troubleshooting
 
 ### Compilation Errors
 
-**Error: curl/curl.h not found**
+If you get "curl/curl.h not found":
 ```bash
 # Ubuntu/Debian
 sudo apt install libcurl4-openssl-dev
@@ -425,7 +333,7 @@ sudo yum install libcurl-devel
 brew install curl
 ```
 
-**Error: undefined reference to curl_easy_init**
+If you get "undefined reference to curl_easy_init":
 ```bash
 # Make sure to link with -lcurl flag
 gcc Flash-cli.c -o flash -lcurl
@@ -433,52 +341,43 @@ gcc Flash-cli.c -o flash -lcurl
 
 ### Runtime Issues
 
-**Clipboard not working**
+Clipboard not working? Install a clipboard tool:
 ```bash
-# Install clipboard tool
 sudo apt install xclip  # or xsel, wl-clipboard
 ```
 
-**Update check fails**
+Update check fails? Skip it:
 ```bash
-# Skip update checks
 export FLASH_SKIP_UPDATE=1
 ./flash
 ```
 
-**API request fails**
-- Verify your API key is correct
-- Check your internet connection
-- Ensure the API endpoint URL is accurate
-- Verify the model name matches your API provider
+API request fails? Check your API key is correct, verify your internet connection, make sure the API endpoint URL is right, and confirm the model name matches your provider.
 
-## 💬 Support
+## Support
 
-- 📧 Open an issue on GitHub
-- 💬 Start a discussion in the repository
-- 🐛 Report bugs with detailed reproduction steps
+Open an issue on GitHub, start a discussion in the repository, or report bugs with detailed reproduction steps.
 
-## 🙏 Acknowledgments
+## Credits
 
-- [libcurl](https://curl.se/libcurl/) - The fantastic HTTP library powering Flash
-- [Gruvbox](https://github.com/morhetz/gruvbox) - The beautiful color scheme
-- Inspired by [Postman](https://www.postman.com/) - The API development platform
-- Thanks to all AI providers for their amazing APIs
+libcurl - The HTTP library powering Flash
 
-## 👨‍💻 Author
+Gruvbox - The color scheme
 
-**Aadityansh**
-- GitHub: [@aadityansha06](https://github.com/aadityansha06)
-- Project Link: [https://github.com/aadityansha06/Flash-Http-cli](https://github.com/aadityansha06/Flash-Http-cli)
+Inspired by Postman
+
+Thanks to all AI providers for their APIs
+
+## Author
+
+Aadityansh
+- GitHub: @aadityansha06
+- Project Link: https://github.com/aadityansha06/Flash-Http-cli
 
 ---
 
-<div align="center">
+Flash HTTP CLI - Fast, Simple, Powerful
 
-**⚡ Flash HTTP CLI - Fast, Simple, Powerful ⚡**
+Made with C and libcurl
 
-Made with ❤️ using C and libcurl
-
-[⭐ Star this repo](https://github.com/aadityansha06/Flash-Http-cli) | [🐛 Report Bug](https://github.com/aadityansha06/Flash-Http-cli/issues) | [✨ Request Feature](https://github.com/aadityansha06/Flash-Http-cli/issues)
-
-</div>
+Star this repo | Report Bug | Request Feature
