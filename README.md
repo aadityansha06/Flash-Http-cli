@@ -221,13 +221,24 @@ gcc -g -o flash-dev main.c -lcurl
 ```
 ## 🤝 Contributing
 
-Contributions are welcome! Here's how you can help:
+Contributions are welcome! Please read our [**CONTRIBUTING.md**](Developer-Docs/CONTRIBUTING.md) guide for detailed information on:
+
+- ✅ Code standards and naming conventions
+- ✅ Version management and semantic versioning
+- ✅ How to properly format commits and PRs
+- ✅ Testing your changes
+- ✅ Step-by-step submission process
+
+**Quick start:**
 
 1. 🍴 Fork the repository
 2. 🌿 Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. 💾 Commit your changes (`git commit -m 'Add amazing feature'`)
-4. 🚀 Push to the branch (`git push origin feature/amazing-feature`)
-5. 🎯 Open a Pull Request
+4. 📝 Update version in `lib/version.h`
+5. 🚀 Push to the branch (`git push origin feature/amazing-feature`)
+6. 🎯 Open a Pull Request
+
+⚠️ **Important:** Always update `lib/version.h` with your changes. See [CONTRIBUTING.md](Developer-Docs/CONTRIBUTING.md#-version-management) for details.
 
 # Contributors
 
