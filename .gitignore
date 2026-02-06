@@ -1,6 +1,96 @@
-bin
-.vscode
+# Compiled binaries and object files
+*.o
+*.out
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
 
+# Flash-specific binaries
 flash
-
 flash-linux-x64
+flash-macos-x64
+flash-windows-x64.exe
+flash.exe
+
+# Backup files
+*.bak
+*.backup
+flash.bak
+flash.tmp
+*.tmp
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.vim/
+.emacs.d/
+
+# Build directories
+build/
+dist/
+cmake-build-debug/
+cmake-build-release/
+bin/
+
+# Dependencies and package managers
+node_modules/
+package-lock.json
+yarn.lock
+
+# Debugging
+*.dSYM/
+*.su
+*.gch
+*.pch
+vgcore.*
+.gdb_history
+
+# Test artifacts
+*.gcno
+*.gcda
+coverage/
+
+# OS-specific files
+Thumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Temporary files
+*.log
+*.pid
+*.seed
+*.pid.lock
+.tmp/
+temp/
+
+# Memory dump files
+core
+core.*
+
+# Local environment variables
+.env
+.env.local
+.env.*.local
+
+# Session files
+.session
+
+# Configuration overrides (local)
+local.conf
+config.local
+
+# Miscellaneous
+.cache/
+*.cache
+__pycache__/
+.pytest_cache/
