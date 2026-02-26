@@ -336,10 +336,10 @@ int display(void)
 
   printf(GB_FG "┌─────────────────────────────────────────────────────────────────────┐\n");
   printf("│                                                                     │\n");
-  printf("│  " GB_GREEN "⚡ " GB_YELLOW "1" GB_FG ". " GB_AQUA "GET Request   " GB_GRAY "│ " GB_FG "Retrieve data from endpoint            " GB_GRAY "      │\n");
-  printf("│  " GB_ORANGE "📡 " GB_YELLOW "2" GB_FG ". " GB_PURPLE "POST Request  " GB_GRAY "│ " GB_FG "Send data to server                   " GB_GRAY "       │\n");
-  printf("│  " GB_BLUE "🗝️ " GB_YELLOW "3" GB_FG ". " GB_PURPLE "AI-Request " GB_GRAY "│ " GB_FG " Make an API call to any AI" GB_GRAY "       │\n");
-  printf("│  " GB_RED "🚪 " GB_YELLOW "0" GB_FG ". " GB_RED "Exit          " GB_GRAY "│ " GB_FG "Close Flash CLI                       " GB_GRAY "       │\n");
+  printf("│  " GB_GREEN "" GB_YELLOW "1" GB_FG ". " GB_AQUA "GET Request   " GB_GRAY "│ " GB_FG "Retrieve data from endpoint            " GB_GRAY "      │\n");
+  printf("│  " GB_ORANGE " " GB_YELLOW "2" GB_FG ". " GB_PURPLE "POST Request  " GB_GRAY "│ " GB_FG "Send data to server                   " GB_GRAY "       │\n");
+  printf("│  " GB_BLUE " " GB_YELLOW "3" GB_FG ". " GB_PURPLE "AI-Request " GB_GRAY "│ " GB_FG " Make an API call to any AI" GB_GRAY "       │\n");
+  printf("│  " GB_RED " " GB_YELLOW "0" GB_FG ". " GB_RED "Exit          " GB_GRAY "│ " GB_FG "Close Flash CLI                       " GB_GRAY "       │\n");
   printf("│                                                                     │\n");
   printf("└─────────────────────────────────────────────────────────────────────┘\n" RESET);
 
@@ -950,7 +950,7 @@ static void content_json(void)
   fgets(url, sizeof(url), stdin);
   url[strcspn(url, "\n")] = 0;
 
-  printf(GRV_YELLOW "\n  🚀 Sending JSON request...\n" RESET);
+  printf(GRV_YELLOW "\n   Sending JSON request...\n" RESET);
   printf(GRV_GRAY "  JSON being sent:\n%s\n" RESET, jsondata);
 
   struct curl_slist *list = NULL;
@@ -970,7 +970,7 @@ static void content_json(void)
   else
   {
     printf("\nLength of data sent: %zu bytes", strlen(jsondata));
-    printf("\n✅ Data sent successfully!");
+    printf("\n Data sent successfully!");
   }
 
   /* Ask for code snippet generation */
@@ -1171,12 +1171,12 @@ static void post_method(void)
     printf("  │" GRV_FG "                  " BOLD "POST METHOD" RESET GRV_FG "                   " GRV_PURPLE "     │\n");
     printf("  ├─────────────────────────────────────────────────────┤\n");
     printf("  │                                                     │\n");
-    printf("  │  " GRV_YELLOW "📋 " GRV_BLUE "1." GRV_FG " Form Data    " GRV_GRAY "- application/x-www-form     " GRV_PURPLE "   │\n");
+    printf("  │  " GRV_YELLOW " " GRV_BLUE "1." GRV_FG " Form Data    " GRV_GRAY "- application/x-www-form     " GRV_PURPLE "   │\n");
     printf("  │                    " GRV_GRAY "  urlencoded                  " GRV_PURPLE "   │\n");
     printf("  │                                                     │\n");
-    printf("  │  " GRV_GREEN "📄 " GRV_BLUE "2." GRV_FG " JSON Data    " GRV_GRAY "- application/json           " GRV_PURPLE "   │\n");
+    printf("  │  " GRV_GREEN "" GRV_BLUE "2." GRV_FG " JSON Data    " GRV_GRAY "- application/json           " GRV_PURPLE "   │\n");
     printf("  │                                                     │\n");
-    printf("  │  " GRV_RED "🔙 " GRV_BLUE "0." GRV_FG " Back         " GRV_GRAY "- Return to main menu        " GRV_PURPLE "   │\n");
+    printf("  │  " GRV_RED " " GRV_BLUE "0." GRV_FG " Back         " GRV_GRAY "- Return to main menu        " GRV_PURPLE "   │\n");
     printf("  │                                                     │\n");
     printf("  └─────────────────────────────────────────────────────┘\n");
     printf(RESET);
